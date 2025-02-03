@@ -9,7 +9,126 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      damage_reports: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      expert_consultations: {
+        Row: {
+          answer: string | null
+          contact_info: string
+          created_at: string
+          id: string
+          question: string
+          status: string | null
+        }
+        Insert: {
+          answer?: string | null
+          contact_info: string
+          created_at?: string
+          id?: string
+          question: string
+          status?: string | null
+        }
+        Update: {
+          answer?: string | null
+          contact_info?: string
+          created_at?: string
+          id?: string
+          question?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      missing_persons: {
+        Row: {
+          age: number | null
+          created_at: string
+          gender: string | null
+          id: string
+          identifying_features: string | null
+          image_url: string | null
+          last_seen_location: string
+          name: string
+          reporter_contact: string | null
+          status: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          identifying_features?: string | null
+          image_url?: string | null
+          last_seen_location: string
+          name: string
+          reporter_contact?: string | null
+          status?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          gender?: string | null
+          id?: string
+          identifying_features?: string | null
+          image_url?: string | null
+          last_seen_location?: string
+          name?: string
+          reporter_contact?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      news_updates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
