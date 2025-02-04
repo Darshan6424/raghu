@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      damage_report_comments: {
+        Row: {
+          content: string
+          created_at: string
+          damage_report_id: string | null
+          id: string
+          image_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          damage_report_id?: string | null
+          id?: string
+          image_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          damage_report_id?: string | null
+          id?: string
+          image_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "damage_report_comments_damage_report_id_fkey"
+            columns: ["damage_report_id"]
+            isOneToOne: false
+            referencedRelation: "damage_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       damage_reports: {
         Row: {
           created_at: string
@@ -62,6 +97,41 @@ export type Database = {
           status?: string | null
         }
         Relationships: []
+      }
+      missing_person_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          missing_person_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          missing_person_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          missing_person_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "missing_person_comments_missing_person_id_fkey"
+            columns: ["missing_person_id"]
+            isOneToOne: false
+            referencedRelation: "missing_persons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       missing_persons: {
         Row: {
@@ -126,6 +196,27 @@ export type Database = {
           id?: string
           image_url?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          username?: string | null
         }
         Relationships: []
       }
