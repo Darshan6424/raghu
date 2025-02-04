@@ -78,7 +78,12 @@ const DamageReportForm = () => {
   return (
     <section id="damage-report" className="min-h-screen py-20 px-4">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold mb-8 text-center">Report Damage</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold">Report Damage</h2>
+          <Button onClick={() => navigate('/damage-reports-list')}>
+            View All Reports
+          </Button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             placeholder="Location"
