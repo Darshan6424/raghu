@@ -1,9 +1,37 @@
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const HeroSection = () => {
+  const { session } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleAuthClick = async () => {
+    if (session) {
+      try {
+        await supabase.auth.signOut();
+        toast({
+          title: "Success",
+          description: "You have been logged out",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } else {
+      navigate("/auth");
+    }
   };
 
   return (
@@ -30,6 +58,13 @@ const HeroSection = () => {
           onClick={() => scrollToSection('first-aid')}
         >
           First Aid
+        </Button>
+        <Button
+          className="text-lg px-8 py-6"
+          variant="outline"
+          onClick={handleAuthClick}
+        >
+          {session ? "Sign Out" : "Sign In"}
         </Button>
       </div>
     </section>
