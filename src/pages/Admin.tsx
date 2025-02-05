@@ -60,26 +60,30 @@ const Admin = () => {
     const fetchData = async () => {
       try {
         // Fetch users with their roles
-        const { data: usersData } = await supabase
-          .from('profiles')
+        const { data: usersWithRoles } = await supabase
+          .from('user_roles')
           .select(`
-            id,
-            created_at,
-            user_roles (role)
+            user_id,
+            role,
+            profiles!inner (
+              id,
+              created_at
+            )
           `);
+
+        // Get user emails from auth metadata
+        const formattedUsers = (usersWithRoles || []).map(userRole => ({
+          id: userRole.profiles.id,
+          email: userRole.profiles.id, // Note: We can't get email directly due to auth limitations
+          created_at: userRole.profiles.created_at,
+          role: userRole.role
+        }));
 
         // Fetch all reports
         const [{ data: missingPersons }, { data: damageReports }] = await Promise.all([
           supabase.from('missing_persons').select('*'),
           supabase.from('damage_reports').select('*')
         ]);
-
-        const formattedUsers = usersData?.map(user => ({
-          id: user.id,
-          email: user.email || 'No email',
-          created_at: user.created_at,
-          role: user.user_roles?.[0]?.role || 'normal'
-        })) || [];
 
         const formattedReports = [
           ...(missingPersons?.map(report => ({
