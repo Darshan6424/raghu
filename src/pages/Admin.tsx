@@ -59,24 +59,21 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch users with their roles by joining on user_id
-        const { data: usersWithRoles } = await supabase
+        const { data: usersData } = await supabase
           .from('user_roles')
           .select(`
-            user_id,
             role,
-            profiles:user_id(
+            profiles (
               id,
               created_at
             )
           `);
 
-        // Get user emails from auth metadata
-        const formattedUsers = (usersWithRoles || []).map(userRole => ({
-          id: userRole.profiles.id,
-          email: userRole.profiles.id, // Note: We can't get email directly due to auth limitations
-          created_at: userRole.profiles.created_at,
-          role: userRole.role
+        const formattedUsers = (usersData || []).map(userData => ({
+          id: userData.profiles.id,
+          email: userData.profiles.id, // Using ID as email since we can't get email directly
+          created_at: userData.profiles.created_at,
+          role: userData.role
         }));
 
         // Fetch all reports
