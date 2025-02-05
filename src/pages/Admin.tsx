@@ -59,21 +59,23 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: usersData } = await supabase
+        // Fetch user roles joined with profiles using user_id
+        const { data: userData } = await supabase
           .from('user_roles')
           .select(`
             role,
-            profiles (
+            user_id,
+            profiles!user_roles_user_id_fkey (
               id,
               created_at
             )
           `);
 
-        const formattedUsers = (usersData || []).map(userData => ({
-          id: userData.profiles.id,
-          email: userData.profiles.id, // Using ID as email since we can't get email directly
-          created_at: userData.profiles.created_at,
-          role: userData.role
+        const formattedUsers = (userData || []).map(user => ({
+          id: user.profiles.id,
+          email: user.user_id, // Using user_id as email since we can't get email directly
+          created_at: user.profiles.created_at,
+          role: user.role
         }));
 
         // Fetch all reports
@@ -183,3 +185,4 @@ const Admin = () => {
 };
 
 export default Admin;
+
