@@ -36,45 +36,29 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!session?.user.id) {
-        navigate('/');
-        return;
-      }
-
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (roleData?.role !== 'admin') {
-        navigate('/');
-      }
-    };
-
-    checkAdminRole();
+    if (!session?.user.id) {
+      navigate('/');
+    }
   }, [session, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch user roles joined with profiles using user_id
         const { data: userData } = await supabase
           .from('user_roles')
           .select(`
             role,
             user_id,
-            profiles!user_roles_user_id_fkey (
+            profiles (
               id,
               created_at
             )
           `);
 
         const formattedUsers = (userData || []).map(user => ({
-          id: user.profiles.id,
-          email: user.user_id, // Using user_id as email since we can't get email directly
-          created_at: user.profiles.created_at,
+          id: user.profiles?.id || '',
+          email: user.user_id,
+          created_at: user.profiles?.created_at || new Date().toISOString(),
           role: user.role
         }));
 
@@ -185,4 +169,3 @@ const Admin = () => {
 };
 
 export default Admin;
-
