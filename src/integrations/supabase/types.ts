@@ -156,6 +156,7 @@ export type Database = {
           last_seen_location: string
           name: string
           reporter_contact: string | null
+          reporter_id: string | null
           status: string | null
         }
         Insert: {
@@ -168,6 +169,7 @@ export type Database = {
           last_seen_location: string
           name: string
           reporter_contact?: string | null
+          reporter_id?: string | null
           status?: string | null
         }
         Update: {
@@ -180,6 +182,7 @@ export type Database = {
           last_seen_location?: string
           name?: string
           reporter_contact?: string | null
+          reporter_id?: string | null
           status?: string | null
         }
         Relationships: []
