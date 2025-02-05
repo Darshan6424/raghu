@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import MissingPersonsList from "./pages/MissingPersonsList";
 import DamageReportsList from "./pages/DamageReportsList";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/missing-persons-list" element={<MissingPersonsList />} />
             <Route path="/damage-reports-list" element={<DamageReportsList />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/first-aid/:topic" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
