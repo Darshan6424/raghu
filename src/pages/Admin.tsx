@@ -59,13 +59,13 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch users with their roles
+        // Fetch users with their roles by joining on user_id
         const { data: usersWithRoles } = await supabase
           .from('user_roles')
           .select(`
             user_id,
             role,
-            profiles!inner (
+            profiles:user_id(
               id,
               created_at
             )
