@@ -16,7 +16,9 @@ export type Database = {
           damage_report_id: string | null
           id: string
           image_url: string | null
+          likes: number | null
           user_id: string | null
+          user_likes: string[] | null
         }
         Insert: {
           content: string
@@ -24,7 +26,9 @@ export type Database = {
           damage_report_id?: string | null
           id?: string
           image_url?: string | null
+          likes?: number | null
           user_id?: string | null
+          user_likes?: string[] | null
         }
         Update: {
           content?: string
@@ -32,7 +36,9 @@ export type Database = {
           damage_report_id?: string | null
           id?: string
           image_url?: string | null
+          likes?: number | null
           user_id?: string | null
+          user_likes?: string[] | null
         }
         Relationships: [
           {
@@ -104,24 +110,30 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          likes: number | null
           missing_person_id: string | null
           user_id: string | null
+          user_likes: string[] | null
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
           image_url?: string | null
+          likes?: number | null
           missing_person_id?: string | null
           user_id?: string | null
+          user_likes?: string[] | null
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
           image_url?: string | null
+          likes?: number | null
           missing_person_id?: string | null
           user_id?: string | null
+          user_likes?: string[] | null
         }
         Relationships: [
           {
