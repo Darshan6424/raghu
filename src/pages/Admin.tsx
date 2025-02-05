@@ -61,14 +61,11 @@ const Admin = () => {
       try {
         // Fetch users with their roles
         const { data: usersData } = await supabase
-          .from('user_roles')
+          .from('profiles')
           .select(`
-            user_id,
-            role,
-            profiles!inner (
-              id,
-              created_at
-            )
+            id,
+            created_at,
+            user_roles (role)
           `);
 
         // Fetch all reports
@@ -78,10 +75,10 @@ const Admin = () => {
         ]);
 
         const formattedUsers = usersData?.map(user => ({
-          id: user.profiles.id,
-          email: session?.user.email || 'No email', // Fallback for email
-          created_at: user.profiles.created_at,
-          role: user.role
+          id: user.id,
+          email: user.email || 'No email',
+          created_at: user.created_at,
+          role: user.user_roles?.[0]?.role || 'normal'
         })) || [];
 
         const formattedReports = [
@@ -109,7 +106,7 @@ const Admin = () => {
     };
 
     fetchData();
-  }, [session?.user.email]);
+  }, []);
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
