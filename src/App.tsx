@@ -10,8 +10,6 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import MissingPersonsList from "./pages/MissingPersonsList";
 import DamageReportsList from "./pages/DamageReportsList";
-import MissingPersonDetail from "./pages/MissingPersonDetail";
-import DamageReportDetail from "./pages/DamageReportDetail";
 import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
@@ -27,9 +25,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/missing-persons-list" element={<MissingPersonsList />} />
-            <Route path="/missing-persons/:id" element={<MissingPersonDetail />} />
             <Route path="/damage-reports-list" element={<DamageReportsList />} />
-            <Route path="/damage-reports/:id" element={<DamageReportDetail />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/first-aid/:topic" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -55,11 +54,7 @@ const MissingPersonsList = () => {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {missingPersons.map((person) => (
-            <div 
-              key={person.id} 
-              className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate(`/missing-persons/${person.id}`)}
-            >
+            <div key={person.id} className="bg-white rounded-lg shadow-sm p-6">
               {person.image_url && (
                 <img
                   src={person.image_url}
