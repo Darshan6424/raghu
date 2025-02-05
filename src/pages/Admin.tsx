@@ -44,18 +44,11 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: userData } = await supabase
+        const { data: userRolesData } = await supabase
           .from('user_roles')
-          .select(`
-            role,
-            user_id,
-            profiles (
-              id,
-              created_at
-            )
-          `);
+          .select('*, profiles:user_id(id, created_at)');
 
-        const formattedUsers = (userData || []).map(user => ({
+        const formattedUsers = (userRolesData || []).map(user => ({
           id: user.profiles?.id || '',
           email: user.user_id,
           created_at: user.profiles?.created_at || new Date().toISOString(),
