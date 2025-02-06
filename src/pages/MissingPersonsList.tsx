@@ -59,7 +59,13 @@ const MissingPersonsList = () => {
           const { data: commentData, error: commentError } = await supabase
             .from('missing_person_comments')
             .select(`
-              *,
+              id,
+              content,
+              created_at,
+              user_id,
+              image_url,
+              likes,
+              user_likes,
               profiles (
                 username
               )
@@ -68,7 +74,7 @@ const MissingPersonsList = () => {
             .order('created_at', { ascending: true });
 
           if (commentError) throw commentError;
-          return { personId: person.id, comments: commentData };
+          return { personId: person.id, comments: commentData as Comment[] };
         });
 
         if (commentsPromises) {
@@ -145,7 +151,13 @@ const MissingPersonsList = () => {
           user_id: session.user.id
         }])
         .select(`
-          *,
+          id,
+          content,
+          created_at,
+          user_id,
+          image_url,
+          likes,
+          user_likes,
           profiles (
             username
           )
@@ -156,7 +168,7 @@ const MissingPersonsList = () => {
 
       setComments(prev => ({
         ...prev,
-        [personId]: [...(prev[personId] || []), data]
+        [personId]: [...(prev[personId] || []), data as Comment]
       }));
       setNewComments(prev => ({ ...prev, [personId]: '' }));
 

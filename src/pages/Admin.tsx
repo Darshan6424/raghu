@@ -46,7 +46,14 @@ const Admin = () => {
       try {
         const { data: userRolesData } = await supabase
           .from('user_roles')
-          .select('*, profiles:user_id(id, created_at)');
+          .select(`
+            user_id,
+            role,
+            profiles:user_id (
+              id,
+              created_at
+            )
+          `);
 
         const formattedUsers = (userRolesData || []).map(user => ({
           id: user.profiles?.id || '',
