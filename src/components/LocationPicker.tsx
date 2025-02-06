@@ -17,7 +17,7 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNrZz9sM2JxbTBoODYycm85NmY5Y2EzdTUifQ.9fn7E5ZR7I8H1zv0W6wFHA';
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYW53ZXNoMTMiLCJhIjoiY202dGhsMGExMDNmMjJscjN1dGdpYTB0cyJ9.UhrIpur7WpvGR5NmJDfbpQ';
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -56,3 +56,4 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
 };
 
 export default LocationPicker;
+
