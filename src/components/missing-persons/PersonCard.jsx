@@ -1,7 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, MapPin } from "lucide-react";
 import Comments from "../Comments";
+import { useState } from "react";
+import LocationPicker from "../LocationPicker";
 
 const PersonCard = ({ 
   person, 
@@ -11,6 +13,8 @@ const PersonCard = ({
   onDelete, 
   onCommentAdded 
 }) => {
+  const [showMap, setShowMap] = useState(false);
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       {person.image_url && (
@@ -53,6 +57,30 @@ const PersonCard = ({
         Reported: {new Date(person.created_at).toLocaleDateString()}
       </p>
 
+      {person.latitude && person.longitude && (
+        <div className="mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMap(!showMap)}
+            className="flex items-center gap-2"
+          >
+            <MapPin className="h-4 w-4" />
+            {showMap ? 'Hide Location' : 'View Location'}
+          </Button>
+          
+          {showMap && (
+            <div className="mt-4">
+              <LocationPicker
+                initialLat={person.latitude}
+                initialLng={person.longitude}
+                onLocationSelected={() => {}}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       <Comments 
         comments={comments} 
         itemId={person.id}
@@ -65,3 +93,4 @@ const PersonCard = ({
 };
 
 export default PersonCard;
+
