@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { initializeMap, createMarker, reverseGeocode, getCurrentLocation } from '@/utils/mapUtils';
 import LoadingSpinner from './LoadingSpinner';
+import { Input } from './ui/input';
 
 interface LocationPickerProps {
   onLocationSelect: (latitude: number, longitude: number, location: string) => void;
@@ -20,6 +21,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const { toast } = useToast();
   const mountedRef = useRef(true);
   const [token, setToken] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   // Fetch Mapbox token
   useEffect(() => {
@@ -75,6 +78,40 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
       toast({
         title: "Location Error",
         description: "Failed to get location details. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!token || !searchQuery) return;
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${token}&types=address,place,poi`
+      );
+      
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      setSearchResults(data.features);
+
+      if (data.features.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        if (map.current && marker.current) {
+          map.current.flyTo({
+            center: [lng, lat],
+            zoom: 14
+          });
+          marker.current.setLngLat([lng, lat]).addTo(map.current);
+          handleLocationUpdate(lng, lat);
+        }
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to search location. Please try again.",
         variant: "destructive",
       });
     }
@@ -170,9 +207,44 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   }, [token, toast]);
 
   return (
-    <div className="relative">
+    <div className="relative space-y-2">
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          placeholder="Search for a location..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          className="flex-1"
+        />
+      </div>
       <div ref={mapContainer} className={`w-full ${className} rounded-md`} />
       {isLoading && <LoadingSpinner />}
+      {searchResults.length > 0 && (
+        <div className="absolute top-16 left-0 right-0 bg-white rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+          {searchResults.map((result) => (
+            <button
+              key={result.id}
+              className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+              onClick={() => {
+                if (map.current && marker.current) {
+                  const [lng, lat] = result.center;
+                  map.current.flyTo({
+                    center: [lng, lat],
+                    zoom: 14
+                  });
+                  marker.current.setLngLat([lng, lat]).addTo(map.current);
+                  handleLocationUpdate(lng, lat);
+                  setSearchResults([]);
+                  setSearchQuery(result.place_name);
+                }
+              }}
+            >
+              {result.place_name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
