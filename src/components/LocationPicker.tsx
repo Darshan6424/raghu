@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { initializeMap, createMarker, reverseGeocode, getCurrentLocation } from '@/utils/mapUtils';
 import LoadingSpinner from './LoadingSpinner';
@@ -11,8 +12,6 @@ interface LocationPickerProps {
   className?: string;
 }
 
-const MAPBOX_TOKEN = "pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbHRxbXZ2aHQwMnJpMmtyd2t4ZHRheGthIn0.a9yqwF6VsjsQ_G8pxLBzYw";
-
 const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, className = "h-[300px]" }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -20,12 +19,54 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const mountedRef = useRef(true);
+  const [token, setToken] = useState<string | null>(null);
+
+  // Fetch Mapbox token
+  useEffect(() => {
+    const fetchMapboxToken = async () => {
+      try {
+        console.log('Fetching Mapbox token');
+        const { data, error } = await supabase
+          .from('secrets')
+          .select('value')
+          .eq('name', 'MAPBOX_PUBLIC_TOKEN')
+          .single();
+
+        if (error) {
+          console.error('Error fetching Mapbox token:', error);
+          throw error;
+        }
+
+        if (!data?.value) {
+          console.error('No Mapbox token found');
+          throw new Error('Mapbox token not found');
+        }
+
+        console.log('Successfully fetched Mapbox token');
+        setToken(data.value);
+      } catch (error) {
+        console.error('Failed to fetch Mapbox token:', error);
+        toast({
+          title: "Configuration Error",
+          description: "Failed to load map configuration. Please try again later.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
+    };
+
+    fetchMapboxToken();
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [toast]);
 
   const handleLocationUpdate = async (lng: number, lat: number) => {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current || !token) return;
     
     try {
-      const locationName = await reverseGeocode(lng, lat, MAPBOX_TOKEN);
+      const locationName = await reverseGeocode(lng, lat, token);
       if (mountedRef.current) {
         onLocationSelect(lat, lng, locationName);
       }
@@ -39,14 +80,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
     }
   };
 
-  // Initialize map with the token
+  // Initialize map once we have the token
   useEffect(() => {
-    if (!mapContainer.current || !mountedRef.current) return;
+    if (!token || !mapContainer.current || !mountedRef.current) return;
 
     try {
-      console.log('Initializing map');
-      mapboxgl.accessToken = MAPBOX_TOKEN;
-      map.current = initializeMap(mapContainer.current, MAPBOX_TOKEN);
+      console.log('Initializing map with token');
+      mapboxgl.accessToken = token;
+      map.current = initializeMap(mapContainer.current, token);
 
       map.current.on('load', () => {
         if (!mountedRef.current) return;
@@ -126,7 +167,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         setIsLoading(false);
       }
     }
-  }, [toast]);
+  }, [token, toast]);
 
   return (
     <div className="relative">
