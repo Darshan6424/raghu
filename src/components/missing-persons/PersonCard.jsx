@@ -5,7 +5,7 @@ import Comments from "../Comments";
 
 const PersonCard = ({ 
   person, 
-  comments, 
+  comments = [], 
   session, 
   onStatusUpdate, 
   onDelete, 
