@@ -143,6 +143,13 @@ export type Database = {
             referencedRelation: "missing_persons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "missing_person_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       missing_persons: {

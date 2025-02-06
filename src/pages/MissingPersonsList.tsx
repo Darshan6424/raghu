@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import PersonCard from "@/components/missing-persons/PersonCard";
@@ -20,7 +19,7 @@ interface Comment {
   image_url: string | null;
   likes: number | null;
   user_likes: string[] | null;
-  profiles: Profile | null;
+  profiles: Profile;
 }
 
 interface MissingPerson {
@@ -76,7 +75,10 @@ const MissingPersonsList = () => {
             .order('created_at', { ascending: true });
 
           if (commentError) throw commentError;
-          return { personId: person.id, comments: commentData as Comment[] };
+          return { 
+            personId: person.id, 
+            comments: commentData as unknown as Comment[] 
+          };
         });
 
         if (commentsPromises) {
