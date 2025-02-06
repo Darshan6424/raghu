@@ -17,10 +17,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const [mapLoaded, setMapLoaded] = useState(false);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [isDestroyed, setIsDestroyed] = useState(false);
 
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapContainer.current) return;
+      if (!mapContainer.current || isDestroyed) return;
 
       try {
         // Get the Mapbox token from Supabase
@@ -55,8 +56,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         mapboxgl.accessToken = secretData.value;
 
         // Ensure the container exists before creating the map
-        if (!mapContainer.current) {
-          console.error('Map container not found');
+        if (!mapContainer.current || isDestroyed) {
+          console.error('Map container not found or component destroyed');
           return;
         }
         
@@ -67,6 +68,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           center: [0, 0],
           zoom: 2
         });
+
+        if (isDestroyed) {
+          newMap.remove();
+          return;
+        }
 
         map.current = newMap;
 
@@ -81,6 +87,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
+              if (isDestroyed) return;
               const { latitude, longitude } = position.coords;
               newMap.setCenter([longitude, latitude]);
               newMap.setZoom(13);
@@ -90,8 +97,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
               fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`)
                 .then(response => response.json())
                 .then(data => {
-                  const locationName = data.features[0]?.place_name || '';
-                  onLocationSelect(latitude, longitude, locationName);
+                  if (!isDestroyed) {
+                    const locationName = data.features[0]?.place_name || '';
+                    onLocationSelect(latitude, longitude, locationName);
+                  }
                 })
                 .catch(error => {
                   console.error('Geocoding error:', error);
@@ -100,16 +109,19 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
             () => {
               // If user location is not available, just keep the default view
               console.log('Unable to get location');
-              toast({
-                title: "Notice",
-                description: "Select a location by clicking on the map",
-              });
+              if (!isDestroyed) {
+                toast({
+                  title: "Notice",
+                  description: "Select a location by clicking on the map",
+                });
+              }
             }
           );
         }
 
         // Add click event to map for manual location selection
         newMap.on('click', (e) => {
+          if (isDestroyed) return;
           const { lng, lat } = e.lngLat;
           marker.current?.setLngLat([lng, lat]).addTo(newMap);
           
@@ -117,48 +129,61 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`)
             .then(response => response.json())
             .then(data => {
-              const locationName = data.features[0]?.place_name || '';
-              onLocationSelect(lat, lng, locationName);
+              if (!isDestroyed) {
+                const locationName = data.features[0]?.place_name || '';
+                onLocationSelect(lat, lng, locationName);
+              }
             });
         });
 
         // Handle marker drag end
         marker.current.on('dragend', () => {
+          if (isDestroyed) return;
           const lngLat = marker.current?.getLngLat();
           if (lngLat) {
             fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`)
               .then(response => response.json())
               .then(data => {
-                const locationName = data.features[0]?.place_name || '';
-                onLocationSelect(lngLat.lat, lngLat.lng, locationName);
+                if (!isDestroyed) {
+                  const locationName = data.features[0]?.place_name || '';
+                  onLocationSelect(lngLat.lat, lngLat.lng, locationName);
+                }
               });
           }
         });
 
         newMap.on('load', () => {
-          setMapLoaded(true);
-          setIsLoading(false);
+          if (!isDestroyed) {
+            setMapLoaded(true);
+            setIsLoading(false);
+          }
         });
       } catch (error) {
         console.error('Map initialization error:', error);
-        toast({
-          title: "Error",
-          description: "Failed to initialize the map. Please try again later.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
+        if (!isDestroyed) {
+          toast({
+            title: "Error",
+            description: "Failed to initialize the map. Please try again later.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+        }
       }
     };
 
     initializeMap();
 
     return () => {
-      // Proper cleanup
+      setIsDestroyed(true);
+      // Remove marker first
       if (marker.current) {
         marker.current.remove();
+        marker.current = null;
       }
+      // Then remove map
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
   }, [onLocationSelect, toast]);
