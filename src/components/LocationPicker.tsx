@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -36,6 +37,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
             description: "Failed to load the map. Please try again later.",
             variant: "destructive",
           });
+          setIsLoading(false);
           return;
         }
 
@@ -46,20 +48,29 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
             description: "Map configuration is missing. Please contact support.",
             variant: "destructive",
           });
+          setIsLoading(false);
           return;
         }
 
         mapboxgl.accessToken = secretData.value;
+
+        // Ensure the container exists before creating the map
+        if (!mapContainer.current) {
+          console.error('Map container not found');
+          return;
+        }
         
         // Initialize map with default center
-        map.current = new mapboxgl.Map({
+        const newMap = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/streets-v12',
           center: [0, 0],
           zoom: 2
         });
 
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.current = newMap;
+
+        newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
         // Create a marker that will be shown on click or user location
         marker.current = new mapboxgl.Marker({
@@ -71,9 +82,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           navigator.geolocation.getCurrentPosition(
             (position) => {
               const { latitude, longitude } = position.coords;
-              map.current?.setCenter([longitude, latitude]);
-              map.current?.setZoom(13);
-              marker.current?.setLngLat([longitude, latitude]).addTo(map.current!);
+              newMap.setCenter([longitude, latitude]);
+              newMap.setZoom(13);
+              marker.current?.setLngLat([longitude, latitude]).addTo(newMap);
               
               // Get location name using reverse geocoding
               fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`)
@@ -98,9 +109,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         }
 
         // Add click event to map for manual location selection
-        map.current.on('click', (e) => {
+        newMap.on('click', (e) => {
           const { lng, lat } = e.lngLat;
-          marker.current?.setLngLat([lng, lat]).addTo(map.current!);
+          marker.current?.setLngLat([lng, lat]).addTo(newMap);
           
           // Get location name using reverse geocoding
           fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`)
@@ -124,7 +135,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           }
         });
 
-        map.current.on('load', () => {
+        newMap.on('load', () => {
           setMapLoaded(true);
           setIsLoading(false);
         });
@@ -135,15 +146,22 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           description: "Failed to initialize the map. Please try again later.",
           variant: "destructive",
         });
+        setIsLoading(false);
       }
     };
 
     initializeMap();
 
     return () => {
-      map.current?.remove();
+      // Proper cleanup
+      if (marker.current) {
+        marker.current.remove();
+      }
+      if (map.current) {
+        map.current.remove();
+      }
     };
-  }, [onLocationSelect]);
+  }, [onLocationSelect, toast]);
 
   return (
     <div className="relative">
