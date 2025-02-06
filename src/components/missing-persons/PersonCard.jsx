@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import Comments from "./Comments";
+import Comments from "../Comments";
 
 const PersonCard = ({ 
   person, 
@@ -55,9 +55,10 @@ const PersonCard = ({
 
       <Comments 
         comments={comments} 
-        personId={person.id}
+        itemId={person.id}
         session={session}
         onCommentAdded={onCommentAdded}
+        tableName="missing_person_comments"
       />
     </div>
   );
