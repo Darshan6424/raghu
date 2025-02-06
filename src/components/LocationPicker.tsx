@@ -3,23 +3,34 @@ import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
+interface Marker {
+  lat: number;
+  lng: number;
+  popup?: string;
+}
+
 interface LocationPickerProps {
   onLocationSelected: (lat: number, lng: number) => void;
   initialLat?: number;
   initialLng?: number;
+  markers?: Marker[];
 }
 
-const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng = 84.1240 }: LocationPickerProps) => {
+const LocationPicker = ({ 
+  onLocationSelected, 
+  initialLat = 28.3949, 
+  initialLng = 84.1240,
+  markers = []
+}: LocationPickerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const marker = useRef<mapboxgl.Marker | null>(null);
+  const markerRefs = useRef<mapboxgl.Marker[]>([]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYW53ZXNoMTMiLCJhIjoiY202dGhsMGExMDNmMjJscjN1dGdpYTB0cyJ9.UhrIpur7WpvGR5NmJDfbpQ';
     
-    // Nepal bounds - specified as [west, south, east, north]
     const nepalBounds: [number, number, number, number] = [
       80.0884, // west
       26.3478, // south
@@ -33,42 +44,65 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       center: [initialLng, initialLat],
       zoom: 7,
       maxBounds: nepalBounds,
-      minZoom: 6 // Prevent zooming out too far
+      minZoom: 6
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    marker.current = new mapboxgl.Marker({
-      draggable: true
-    })
-      .setLngLat([initialLng, initialLat])
-      .addTo(map.current);
+    // Add main marker if no markers provided
+    if (markers.length === 0) {
+      const mainMarker = new mapboxgl.Marker({
+        draggable: true
+      })
+        .setLngLat([initialLng, initialLat])
+        .addTo(map.current);
 
-    // Handle marker drag
-    marker.current.on('dragend', () => {
-      const lngLat = marker.current?.getLngLat();
-      if (lngLat) {
+      mainMarker.on('dragend', () => {
+        const lngLat = mainMarker.getLngLat();
         onLocationSelected(lngLat.lat, lngLat.lng);
-      }
-    });
+      });
 
-    // Handle map click without reloading
-    map.current.on('click', (e) => {
-      e.preventDefault();
-      const { lng, lat } = e.lngLat;
-      
-      if (marker.current) {
-        marker.current.setLngLat([lng, lat]);
+      map.current.on('click', (e) => {
+        e.preventDefault();
+        const { lng, lat } = e.lngLat;
+        mainMarker.setLngLat([lng, lat]);
         onLocationSelected(lat, lng);
+      });
+
+      markerRefs.current = [mainMarker];
+    } else {
+      // Add all provided markers
+      markers.forEach(markerData => {
+        const marker = new mapboxgl.Marker()
+          .setLngLat([markerData.lng, markerData.lat])
+          .addTo(map.current!);
+
+        if (markerData.popup) {
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(markerData.popup);
+          marker.setPopup(popup);
+        }
+
+        markerRefs.current.push(marker);
+      });
+
+      // Fit bounds to show all markers
+      if (markers.length > 1) {
+        const bounds = new mapboxgl.LngLatBounds();
+        markers.forEach(marker => {
+          bounds.extend([marker.lng, marker.lat]);
+        });
+        map.current.fitBounds(bounds, { padding: 50 });
       }
-    });
+    }
 
     map.current.scrollZoom.enable();
 
     return () => {
+      markerRefs.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, []); // Remove initialLat and initialLng from dependencies
+  }, [initialLat, initialLng, markers]); 
 
   return (
     <div className="space-y-2">

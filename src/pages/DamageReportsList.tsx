@@ -1,7 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { MapPin } from "lucide-react";
+import LocationPicker from "@/components/LocationPicker";
 
 interface DamageReport {
   id: string;
@@ -10,11 +13,14 @@ interface DamageReport {
   image_url: string | null;
   created_at: string;
   verified: boolean;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const DamageReportsList = () => {
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMap, setShowMap] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,13 +47,49 @@ const DamageReportsList = () => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  // Find center point for reports with coordinates
+  const reportsWithCoordinates = damageReports.filter(report => report.latitude && report.longitude);
+  const initialCoordinates = reportsWithCoordinates.length > 0 
+    ? { lat: reportsWithCoordinates[0].latitude!, lng: reportsWithCoordinates[0].longitude! }
+    : { lat: 28.3949, lng: 84.1240 }; // Nepal's center coordinates
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Damage Reports</h1>
-          <Button onClick={() => navigate('/')}>Back to Home</Button>
+          <div className="flex gap-4">
+            <Button 
+              variant="outline"
+              onClick={() => setShowMap(!showMap)}
+              className="flex items-center gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              {showMap ? 'Hide Map' : 'Show Map'}
+            </Button>
+            <Button onClick={() => navigate('/')}>Back to Home</Button>
+          </div>
         </div>
+
+        {showMap && reportsWithCoordinates.length > 0 && (
+          <div className="mb-8">
+            <LocationPicker
+              initialLat={initialCoordinates.lat}
+              initialLng={initialCoordinates.lng}
+              onLocationSelected={() => {}}
+              markers={reportsWithCoordinates.map(report => ({
+                lat: report.latitude!,
+                lng: report.longitude!,
+                popup: `
+                  <strong>${report.location}</strong><br/>
+                  ${report.description}<br/>
+                  ${new Date(report.created_at).toLocaleDateString()}
+                `
+              }))}
+            />
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {damageReports.map((report) => (
             <div key={report.id} className="bg-white rounded-lg shadow-sm p-6">

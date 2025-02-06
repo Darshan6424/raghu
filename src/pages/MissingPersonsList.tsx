@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import PersonCard from "@/components/missing-persons/PersonCard";
+import { MapPin } from "lucide-react";
+import LocationPicker from "@/components/LocationPicker";
 
 interface Profile {
   username: string | null;
@@ -34,12 +36,15 @@ interface MissingPerson {
   reporter_contact: string | null;
   reporter_id: string | null;
   created_at: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const MissingPersonsList = () => {
   const [missingPersons, setMissingPersons] = useState<MissingPerson[]>([]);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
+  const [showMap, setShowMap] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session } = useAuth();
@@ -168,13 +173,50 @@ const MissingPersonsList = () => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  // Find reports with coordinates
+  const reportsWithCoordinates = missingPersons.filter(person => person.latitude && person.longitude);
+  const initialCoordinates = reportsWithCoordinates.length > 0 
+    ? { lat: reportsWithCoordinates[0].latitude!, lng: reportsWithCoordinates[0].longitude! }
+    : { lat: 28.3949, lng: 84.1240 }; // Nepal's center coordinates
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Missing Persons Reports</h1>
-          <Button onClick={() => navigate('/')}>Back to Home</Button>
+          <div className="flex gap-4">
+            <Button 
+              variant="outline"
+              onClick={() => setShowMap(!showMap)}
+              className="flex items-center gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              {showMap ? 'Hide Map' : 'Show Map'}
+            </Button>
+            <Button onClick={() => navigate('/')}>Back to Home</Button>
+          </div>
         </div>
+
+        {showMap && reportsWithCoordinates.length > 0 && (
+          <div className="mb-8">
+            <LocationPicker
+              initialLat={initialCoordinates.lat}
+              initialLng={initialCoordinates.lng}
+              onLocationSelected={() => {}}
+              markers={reportsWithCoordinates.map(person => ({
+                lat: person.latitude!,
+                lng: person.longitude!,
+                popup: `
+                  <strong>${person.name}</strong><br/>
+                  Last seen: ${person.last_seen_location}<br/>
+                  Status: ${person.status}<br/>
+                  ${new Date(person.created_at).toLocaleDateString()}
+                `
+              }))}
+            />
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {missingPersons.map((person) => (
             <PersonCard
