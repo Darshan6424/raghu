@@ -7,6 +7,7 @@ import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import LocationPicker from "./LocationPicker";
 
 const MissingPersonForm = () => {
   const { toast } = useToast();
@@ -20,6 +21,8 @@ const MissingPersonForm = () => {
     features: "",
     contact: "",
     image: null as File | null,
+    latitude: 28.3949,
+    longitude: 84.1240,
   });
 
   const handleImageUpload = async (file: File) => {
@@ -42,6 +45,14 @@ const MissingPersonForm = () => {
     return publicUrl;
   };
 
+  const handleLocationSelected = (lat: number, lng: number) => {
+    setMissingPerson(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -61,6 +72,8 @@ const MissingPersonForm = () => {
           identifying_features: missingPerson.features,
           reporter_contact: missingPerson.contact,
           image_url: imageUrl,
+          latitude: missingPerson.latitude,
+          longitude: missingPerson.longitude,
         }]);
 
       if (error) throw error;
@@ -129,6 +142,16 @@ const MissingPersonForm = () => {
             onChange={(e) => setMissingPerson({ ...missingPerson, contact: e.target.value })}
             required
           />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Select Location on Map
+            </label>
+            <LocationPicker
+              onLocationSelected={handleLocationSelected}
+              initialLat={missingPerson.latitude}
+              initialLng={missingPerson.longitude}
+            />
+          </div>
           <div className="flex items-center gap-4">
             <Input
               type="file"

@@ -7,6 +7,7 @@ import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import LocationPicker from "./LocationPicker";
 
 const DamageReportForm = () => {
   const { toast } = useToast();
@@ -16,6 +17,8 @@ const DamageReportForm = () => {
     location: "",
     description: "",
     image: null as File | null,
+    latitude: 28.3949,
+    longitude: 84.1240,
   });
 
   const handleImageUpload = async (file: File) => {
@@ -38,6 +41,14 @@ const DamageReportForm = () => {
     return publicUrl;
   };
 
+  const handleLocationSelected = (lat: number, lng: number) => {
+    setDamageReport(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -53,6 +64,8 @@ const DamageReportForm = () => {
           location: damageReport.location,
           description: damageReport.description,
           image_url: imageUrl,
+          latitude: damageReport.latitude,
+          longitude: damageReport.longitude,
         }]);
 
       if (error) throw error;
@@ -97,6 +110,16 @@ const DamageReportForm = () => {
             onChange={(e) => setDamageReport({ ...damageReport, description: e.target.value })}
             required
           />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Select Location on Map
+            </label>
+            <LocationPicker
+              onLocationSelected={handleLocationSelected}
+              initialLat={damageReport.latitude}
+              initialLng={damageReport.longitude}
+            />
+          </div>
           <div className="flex items-center gap-4">
             <Input
               type="file"
