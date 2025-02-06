@@ -24,7 +24,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
       if (!mapContainer.current || isDestroyed) return;
 
       try {
-        // Get the Mapbox token from Supabase
+        console.log('Fetching Mapbox token...');
         const { data: secretData, error: secretError } = await supabase
           .from('secrets')
           .select('value')
@@ -35,33 +35,30 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           console.error('Error fetching Mapbox token:', secretError);
           toast({
             title: "Error",
-            description: "Failed to load the map. Please try again later.",
+            description: "Failed to load the map configuration. Please try again later.",
             variant: "destructive",
           });
           setIsLoading(false);
           return;
         }
 
-        if (!secretData) {
-          console.error('Mapbox token not found in secrets');
+        if (!secretData?.value) {
+          console.error('Mapbox token not found');
           toast({
             title: "Error",
-            description: "Map configuration is missing. Please contact support.",
+            description: "Map configuration is missing. Please ensure the MAPBOX_PUBLIC_TOKEN is set in Supabase.",
             variant: "destructive",
           });
           setIsLoading(false);
           return;
         }
 
+        console.log('Mapbox token retrieved successfully');
         mapboxgl.accessToken = secretData.value;
 
-        // Ensure the container exists before creating the map
-        if (!mapContainer.current || isDestroyed) {
-          console.error('Map container not found or component destroyed');
-          return;
-        }
-        
-        // Initialize map with default center
+        if (!mapContainer.current || isDestroyed) return;
+
+        console.log('Initializing map...');
         const newMap = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/streets-v12',
@@ -76,14 +73,32 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
 
         map.current = newMap;
 
+        newMap.on('load', () => {
+          if (!isDestroyed) {
+            console.log('Map loaded successfully');
+            setMapLoaded(true);
+            setIsLoading(false);
+          }
+        });
+
+        newMap.on('error', (e) => {
+          console.error('Map error:', e);
+          if (!isDestroyed) {
+            toast({
+              title: "Map Error",
+              description: "There was an error loading the map. Please refresh the page.",
+              variant: "destructive",
+            });
+            setIsLoading(false);
+          }
+        });
+
         newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
-        // Create a marker that will be shown on click or user location
         marker.current = new mapboxgl.Marker({
           draggable: true
         });
 
-        // Get user's location if available
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -93,7 +108,6 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
               newMap.setZoom(13);
               marker.current?.setLngLat([longitude, latitude]).addTo(newMap);
               
-              // Get location name using reverse geocoding
               fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`)
                 .then(response => response.json())
                 .then(data => {
@@ -107,11 +121,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
                 });
             },
             () => {
-              // If user location is not available, just keep the default view
-              console.log('Unable to get location');
               if (!isDestroyed) {
+                console.log('User location not available');
                 toast({
-                  title: "Notice",
+                  title: "Location Notice",
                   description: "Select a location by clicking on the map",
                 });
               }
@@ -119,13 +132,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           );
         }
 
-        // Add click event to map for manual location selection
         newMap.on('click', (e) => {
           if (isDestroyed) return;
           const { lng, lat } = e.lngLat;
           marker.current?.setLngLat([lng, lat]).addTo(newMap);
           
-          // Get location name using reverse geocoding
           fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`)
             .then(response => response.json())
             .then(data => {
@@ -136,7 +147,6 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
             });
         });
 
-        // Handle marker drag end
         marker.current.on('dragend', () => {
           if (isDestroyed) return;
           const lngLat = marker.current?.getLngLat();
@@ -152,18 +162,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           }
         });
 
-        newMap.on('load', () => {
-          if (!isDestroyed) {
-            setMapLoaded(true);
-            setIsLoading(false);
-          }
-        });
       } catch (error) {
         console.error('Map initialization error:', error);
         if (!isDestroyed) {
           toast({
             title: "Error",
-            description: "Failed to initialize the map. Please try again later.",
+            description: "Failed to initialize the map. Please refresh the page.",
             variant: "destructive",
           });
           setIsLoading(false);
@@ -175,12 +179,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
 
     return () => {
       setIsDestroyed(true);
-      // Remove marker first
       if (marker.current) {
         marker.current.remove();
         marker.current = null;
       }
-      // Then remove map
       if (map.current) {
         map.current.remove();
         map.current = null;
