@@ -27,11 +27,12 @@ const LocationPicker = ({
 }: LocationPickerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const mainMarker = useRef<mapboxgl.Marker | null>(null);
   const markerRefs = useRef<mapboxgl.Marker[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYW53ZXNoMTMiLCJhIjoiY202dGhsMGExMDNmMjJscjN1dGdpYTB0cyJ9.UhrIpur7WpvGR5NmJDfbpQ';
     
@@ -54,7 +55,6 @@ const LocationPicker = ({
         scrollZoom: !readOnly
       });
 
-      // Add error handling
       map.current.on('error', (e) => {
         console.error('Map error:', e);
         toast({
@@ -66,30 +66,33 @@ const LocationPicker = ({
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      // Add main marker if no markers provided and not in readOnly mode
       if (markers.length === 0 && !readOnly) {
-        const mainMarker = new mapboxgl.Marker({
+        mainMarker.current = new mapboxgl.Marker({
           draggable: !readOnly
         })
           .setLngLat([initialLng, initialLat])
           .addTo(map.current);
 
         if (!readOnly) {
-          mainMarker.on('dragend', () => {
-            const lngLat = mainMarker.getLngLat();
-            onLocationSelected(lngLat.lat, lngLat.lng);
+          mainMarker.current.on('dragend', () => {
+            const lngLat = mainMarker.current?.getLngLat();
+            if (lngLat) {
+              onLocationSelected(lngLat.lat, lngLat.lng);
+            }
           });
 
           map.current.on('click', (e) => {
             const { lng, lat } = e.lngLat;
-            mainMarker.setLngLat([lng, lat]);
+            map.current?.easeTo({
+              center: [lng, lat],
+              duration: 1000,
+              zoom: map.current.getZoom()
+            });
+            mainMarker.current?.setLngLat([lng, lat]);
             onLocationSelected(lat, lng);
           });
         }
-
-        markerRefs.current = [mainMarker];
       } else {
-        // Add all provided markers
         markers.forEach(markerData => {
           const marker = new mapboxgl.Marker({
             draggable: false
@@ -106,13 +109,18 @@ const LocationPicker = ({
           markerRefs.current.push(marker);
         });
 
-        // Fit bounds to show all markers
         if (markers.length > 1) {
           const bounds = new mapboxgl.LngLatBounds();
           markers.forEach(marker => {
             bounds.extend([marker.lng, marker.lat]);
           });
-          map.current.fitBounds(bounds, { padding: 50 });
+          map.current.fitBounds(bounds, { padding: 50, duration: 1000 });
+        } else if (markers.length === 1) {
+          map.current.easeTo({
+            center: [markers[0].lng, markers[0].lat],
+            zoom: 7,
+            duration: 1000
+          });
         }
       }
 
@@ -135,9 +143,58 @@ const LocationPicker = ({
 
     return () => {
       markerRefs.current.forEach(marker => marker.remove());
+      mainMarker.current?.remove();
       map.current?.remove();
+      map.current = null;
     };
-  }, [initialLat, initialLng, markers, readOnly, onLocationSelected, toast]); 
+  }, []); // Only run on mount
+
+  // Handle prop changes without reinitializing the map
+  useEffect(() => {
+    if (!map.current) return;
+
+    if (markers.length > 0) {
+      // Clear existing markers
+      markerRefs.current.forEach(marker => marker.remove());
+      markerRefs.current = [];
+
+      markers.forEach(markerData => {
+        const marker = new mapboxgl.Marker({
+          draggable: false
+        })
+          .setLngLat([markerData.lng, markerData.lat])
+          .addTo(map.current!);
+
+        if (markerData.popup) {
+          const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(markerData.popup);
+          marker.setPopup(popup);
+        }
+
+        markerRefs.current.push(marker);
+      });
+
+      if (markers.length > 1) {
+        const bounds = new mapboxgl.LngLatBounds();
+        markers.forEach(marker => {
+          bounds.extend([marker.lng, marker.lat]);
+        });
+        map.current.easeTo({
+          padding: 50,
+          duration: 1000,
+          essential: true
+        });
+        map.current.fitBounds(bounds, { padding: 50, duration: 1000 });
+      } else if (markers.length === 1) {
+        map.current.easeTo({
+          center: [markers[0].lng, markers[0].lat],
+          zoom: 7,
+          duration: 1000,
+          essential: true
+        });
+      }
+    }
+  }, [markers]);
 
   return (
     <div className="space-y-2">
