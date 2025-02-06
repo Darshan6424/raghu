@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface LocationPickerProps {
   onLocationSelect: (latitude: number, longitude: number, location: string) => void;
@@ -14,6 +15,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const initializeMap = async () => {
@@ -24,10 +26,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         .from('secrets')
         .select('value')
         .eq('name', 'MAPBOX_PUBLIC_TOKEN')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching Mapbox token:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load the map. Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data) {
+        console.error('Mapbox token not found in secrets');
+        toast({
+          title: "Error",
+          description: "Map configuration is missing. Please contact support.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -66,6 +83,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
           },
           () => {
             console.log('Unable to get location');
+            toast({
+              title: "Notice",
+              description: "Unable to get your current location. Please select a location manually.",
+            });
           }
         );
       }
