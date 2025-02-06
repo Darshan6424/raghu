@@ -59,6 +59,7 @@ export type Database = {
           latitude: number | null
           location: string
           longitude: number | null
+          reporter_id: string | null
           verified: boolean | null
         }
         Insert: {
@@ -69,6 +70,7 @@ export type Database = {
           latitude?: number | null
           location: string
           longitude?: number | null
+          reporter_id?: string | null
           verified?: boolean | null
         }
         Update: {
@@ -79,6 +81,7 @@ export type Database = {
           latitude?: number | null
           location?: string
           longitude?: number | null
+          reporter_id?: string | null
           verified?: boolean | null
         }
         Relationships: []

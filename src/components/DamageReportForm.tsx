@@ -8,11 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import LocationPicker from "./LocationPicker";
+import { useAuth } from "./AuthProvider";
 
 const DamageReportForm = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [damageReport, setDamageReport] = useState({
     location: "",
     description: "",
@@ -20,6 +22,16 @@ const DamageReportForm = () => {
     latitude: 28.3949,
     longitude: 84.1240,
   });
+
+  if (!session) {
+    return (
+      <div className="min-h-screen py-20 px-4 text-center">
+        <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
+        <p className="mb-4">You need to be logged in to submit a damage report.</p>
+        <Button onClick={() => navigate('/auth')}>Sign In</Button>
+      </div>
+    );
+  }
 
   const handleImageUpload = async (file: File) => {
     const fileExt = file.name.split('.').pop();
@@ -66,6 +78,7 @@ const DamageReportForm = () => {
           image_url: imageUrl,
           latitude: damageReport.latitude,
           longitude: damageReport.longitude,
+          reporter_id: session.user.id,
         }]);
 
       if (error) throw error;

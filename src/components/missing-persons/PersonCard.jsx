@@ -4,6 +4,17 @@ import { Trash2, MapPin } from "lucide-react";
 import Comments from "../Comments";
 import { useState } from "react";
 import LocationPicker from "../LocationPicker";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const PersonCard = ({ 
   person, 
@@ -14,6 +25,11 @@ const PersonCard = ({
   onCommentAdded 
 }) => {
   const [showMap, setShowMap] = useState(false);
+  const isOwner = session?.user?.id === person.reporter_id;
+
+  const handleDelete = () => {
+    onDelete(person.id);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -33,7 +49,7 @@ const PersonCard = ({
       )}
       <div className="flex items-center gap-2 mb-1">
         <p className="text-gray-600">Status: {person.status}</p>
-        {session?.user?.id === person.reporter_id && (
+        {isOwner && (
           <>
             <Button
               variant="outline"
@@ -42,13 +58,28 @@ const PersonCard = ({
             >
               Mark as {person.status === 'found' ? 'Missing' : 'Found'}
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDelete(person.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the report.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>
@@ -101,4 +132,3 @@ const PersonCard = ({
 };
 
 export default PersonCard;
-
