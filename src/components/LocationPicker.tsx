@@ -32,14 +32,18 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
         const [lng, lat] = data.features[0].center;
         
         // Update marker position
-        marker.current?.setLngLat([lng, lat]);
+        if (marker.current) {
+          marker.current.setLngLat([lng, lat]);
+        }
         
         // Fly to the location
-        map.current?.flyTo({
-          center: [lng, lat],
-          zoom: 14,
-          essential: true
-        });
+        if (map.current) {
+          map.current.flyTo({
+            center: [lng, lat],
+            zoom: 14,
+            essential: true
+          });
+        }
 
         // Trigger the location selected callback
         onLocationSelected(lat, lng);
@@ -64,12 +68,14 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
     // Add navigation controls (zoom in/out and rotation)
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    // Create marker
     marker.current = new mapboxgl.Marker({
       draggable: true
     })
       .setLngLat([initialLng, initialLat])
       .addTo(map.current);
 
+    // Handle marker drag end
     marker.current.on('dragend', () => {
       const lngLat = marker.current?.getLngLat();
       if (lngLat) {
@@ -77,9 +83,18 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       }
     });
 
+    // Handle map click - Updated to be more precise
     map.current.on('click', (e) => {
+      e.preventDefault(); // Prevent any default behavior
+      
       const { lng, lat } = e.lngLat;
-      marker.current?.setLngLat([lng, lat]);
+      
+      // Update marker position immediately
+      if (marker.current) {
+        marker.current.setLngLat([lng, lat]);
+      }
+      
+      // Update selected location without moving the map
       onLocationSelected(lat, lng);
     });
 
