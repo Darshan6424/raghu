@@ -39,10 +39,11 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
         )}.json?access_token=${mapboxgl.accessToken}`
       );
       const data = await response.json();
-      setSearchResults(data.features.map((feature: any) => ({
+      const results = data.features?.map((feature: any) => ({
         place_name: feature.place_name,
         center: feature.center
-      })));
+      })) || [];
+      setSearchResults(results);
     } catch (error) {
       console.error('Error searching location:', error);
       setSearchResults([]);
@@ -52,12 +53,10 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
   const selectLocation = (result: SearchResult) => {
     const [lng, lat] = result.center;
     
-    // Update marker position
     if (marker.current) {
       marker.current.setLngLat([lng, lat]);
     }
     
-    // Fly to the location
     if (map.current) {
       map.current.flyTo({
         center: [lng, lat],
@@ -66,11 +65,8 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       });
     }
 
-    // Update search input and close popover
     setSearchInput(result.place_name);
     setOpen(false);
-
-    // Trigger the location selected callback
     onLocationSelected(lat, lng);
   };
 
@@ -86,17 +82,14 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       zoom: 6
     });
 
-    // Add navigation controls (zoom in/out and rotation)
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Create marker
     marker.current = new mapboxgl.Marker({
       draggable: true
     })
       .setLngLat([initialLng, initialLat])
       .addTo(map.current);
 
-    // Handle marker drag end
     marker.current.on('dragend', () => {
       const lngLat = marker.current?.getLngLat();
       if (lngLat) {
@@ -104,22 +97,17 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       }
     });
 
-    // Handle map click - Updated to be more precise
     map.current.on('click', (e) => {
-      e.preventDefault(); // Prevent any default behavior
-      
+      e.preventDefault();
       const { lng, lat } = e.lngLat;
       
-      // Update marker position immediately
       if (marker.current) {
         marker.current.setLngLat([lng, lat]);
       }
       
-      // Update selected location without moving the map
       onLocationSelected(lat, lng);
     });
 
-    // Enable scroll zoom
     map.current.scrollZoom.enable();
 
     return () => {
@@ -127,7 +115,6 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
     };
   }, [initialLat, initialLng, onLocationSelected]);
 
-  // Debounce search input
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       handleSearch(searchInput);
@@ -159,6 +146,7 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
         </PopoverTrigger>
         <PopoverContent className="p-0" align="start">
           <Command>
+            <CommandInput placeholder="Search location..." value={searchInput} onValueChange={setSearchInput} />
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {searchResults.map((result, index) => (
