@@ -2,15 +2,13 @@
 import mapboxgl from 'mapbox-gl';
 
 export const initializeMap = (container: HTMLDivElement, token: string) => {
-  const map = new mapboxgl.Map({
+  return new mapboxgl.Map({
     container,
     style: 'mapbox://styles/mapbox/streets-v12',
     center: [0, 0],
-    zoom: 2
+    zoom: 2,
+    accessToken: token
   });
-
-  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-  return map;
 };
 
 export const createMarker = () => {
@@ -24,11 +22,14 @@ export const reverseGeocode = async (lng: number, lat: number, token: string): P
     const response = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}`
     );
+    if (!response.ok) {
+      throw new Error('Geocoding request failed');
+    }
     const data = await response.json();
     return data.features[0]?.place_name || '';
   } catch (error) {
     console.error('Geocoding error:', error);
-    return '';
+    throw error;
   }
 };
 

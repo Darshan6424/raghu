@@ -19,117 +19,143 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const mountedRef = useRef(true);
+  const [token, setToken] = useState<string | null>(null);
 
+  // Fetch Mapbox token once when component mounts
   useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-      if (marker.current) {
-        marker.current.remove();
-        marker.current = null;
-      }
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, []);
-
-  const handleLocationUpdate = async (lng: number, lat: number, token: string) => {
-    if (!mountedRef.current) return;
-    
-    const locationName = await reverseGeocode(lng, lat, token);
-    if (mountedRef.current) {
-      onLocationSelect(lat, lng, locationName);
-    }
-  };
-
-  useEffect(() => {
-    const setupMap = async () => {
-      if (!mapContainer.current || !mountedRef.current) return;
-
+    const fetchMapboxToken = async () => {
       try {
-        const { data: secretData, error: secretError } = await supabase
+        const { data, error } = await supabase
           .from('secrets')
           .select('value')
           .eq('name', 'MAPBOX_PUBLIC_TOKEN')
-          .maybeSingle();
+          .single();
 
-        if (secretError) throw secretError;
-        if (!secretData?.value) throw new Error('Mapbox token not found');
+        if (error) throw error;
+        if (!data?.value) throw new Error('Mapbox token not found');
 
-        const token = secretData.value;
-        mapboxgl.accessToken = token;
+        setToken(data.value);
+      } catch (error) {
+        console.error('Failed to fetch Mapbox token:', error);
+        toast({
+          title: "Configuration Error",
+          description: "Failed to load map configuration. Please try again later.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
+    };
 
+    fetchMapboxToken();
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [toast]);
+
+  const handleLocationUpdate = async (lng: number, lat: number) => {
+    if (!mountedRef.current || !token) return;
+    
+    try {
+      const locationName = await reverseGeocode(lng, lat, token);
+      if (mountedRef.current) {
+        onLocationSelect(lat, lng, locationName);
+      }
+    } catch (error) {
+      console.error('Error updating location:', error);
+      toast({
+        title: "Location Error",
+        description: "Failed to get location details. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Initialize map once we have the token
+  useEffect(() => {
+    if (!token || !mapContainer.current || !mountedRef.current) return;
+
+    try {
+      mapboxgl.accessToken = token;
+      map.current = initializeMap(mapContainer.current, token);
+      marker.current = createMarker();
+
+      map.current.on('load', () => {
         if (!mountedRef.current) return;
+        setIsLoading(false);
+      });
 
-        map.current = initializeMap(mapContainer.current, token);
-        marker.current = createMarker();
-
-        map.current.on('load', () => {
-          if (!mountedRef.current) return;
-          setIsLoading(false);
+      map.current.on('error', (e) => {
+        console.error('Map error:', e);
+        if (!mountedRef.current) return;
+        toast({
+          title: "Map Error",
+          description: "There was an error loading the map. Please refresh the page.",
+          variant: "destructive",
         });
+        setIsLoading(false);
+      });
 
-        map.current.on('error', (e) => {
-          console.error('Map error:', e);
-          if (!mountedRef.current) return;
-          toast({
-            title: "Map Error",
-            description: "There was an error loading the map. Please refresh the page.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-        });
-
-        try {
-          const position = await getCurrentLocation();
+      // Try to get user's current location
+      getCurrentLocation()
+        .then((position) => {
           if (!mountedRef.current || !map.current || !marker.current) return;
 
           const { latitude, longitude } = position.coords;
           map.current.setCenter([longitude, latitude]);
           map.current.setZoom(13);
           marker.current.setLngLat([longitude, latitude]).addTo(map.current);
-          handleLocationUpdate(longitude, latitude, token);
-        } catch (error) {
-          console.log('User location not available');
+          handleLocationUpdate(longitude, latitude);
+        })
+        .catch((error) => {
+          console.log('User location not available:', error);
           if (mountedRef.current) {
             toast({
               title: "Location Notice",
               description: "Select a location by clicking on the map",
             });
           }
-        }
-
-        map.current.on('click', (e) => {
-          if (!mountedRef.current || !marker.current || !map.current) return;
-          const { lng, lat } = e.lngLat;
-          marker.current.setLngLat([lng, lat]).addTo(map.current);
-          handleLocationUpdate(lng, lat, token);
         });
 
-        if (marker.current) {
-          marker.current.on('dragend', () => {
-            if (!mountedRef.current || !marker.current) return;
-            const lngLat = marker.current.getLngLat();
-            handleLocationUpdate(lngLat.lng, lngLat.lat, token);
-          });
-        }
+      // Set up map click handler
+      map.current.on('click', (e) => {
+        if (!mountedRef.current || !marker.current || !map.current) return;
+        const { lng, lat } = e.lngLat;
+        marker.current.setLngLat([lng, lat]).addTo(map.current);
+        handleLocationUpdate(lng, lat);
+      });
 
-      } catch (error) {
-        console.error('Map initialization error:', error);
-        if (mountedRef.current) {
-          toast({
-            title: "Error",
-            description: "Failed to initialize the map. Please refresh the page.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-        }
+      // Set up marker drag handler
+      if (marker.current) {
+        marker.current.on('dragend', () => {
+          if (!mountedRef.current || !marker.current) return;
+          const lngLat = marker.current.getLngLat();
+          handleLocationUpdate(lngLat.lng, lngLat.lat);
+        });
       }
-    };
 
-    setupMap();
-  }, [onLocationSelect, toast]);
+      return () => {
+        if (marker.current) {
+          marker.current.remove();
+          marker.current = null;
+        }
+        if (map.current) {
+          map.current.remove();
+          map.current = null;
+        }
+      };
+    } catch (error) {
+      console.error('Map initialization error:', error);
+      if (mountedRef.current) {
+        toast({
+          title: "Error",
+          description: "Failed to initialize the map. Please refresh the page.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
+    }
+  }, [token, toast]);
 
   return (
     <div className="relative">
