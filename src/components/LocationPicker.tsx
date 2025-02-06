@@ -26,6 +26,9 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       zoom: 6
     });
 
+    // Add navigation controls (zoom in/out and rotation)
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
     marker.current = new mapboxgl.Marker({
       draggable: true
     })
@@ -45,6 +48,9 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       onLocationSelected(lat, lng);
     });
 
+    // Enable scroll zoom
+    map.current.scrollZoom.enable();
+
     return () => {
       map.current?.remove();
     };
@@ -56,4 +62,3 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
 };
 
 export default LocationPicker;
-
