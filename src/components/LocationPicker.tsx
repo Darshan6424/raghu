@@ -14,13 +14,15 @@ interface LocationPickerProps {
   initialLat?: number;
   initialLng?: number;
   markers?: Marker[];
+  readOnly?: boolean;
 }
 
 const LocationPicker = ({ 
   onLocationSelected, 
   initialLat = 28.3949, 
   initialLng = 84.1240,
-  markers = []
+  markers = [],
+  readOnly = false
 }: LocationPickerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -44,36 +46,42 @@ const LocationPicker = ({
       center: [initialLng, initialLat],
       zoom: 7,
       maxBounds: nepalBounds,
-      minZoom: 6
+      minZoom: 6,
+      dragRotate: !readOnly,
+      scrollZoom: !readOnly
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Add main marker if no markers provided
-    if (markers.length === 0) {
+    // Add main marker if no markers provided and not in readOnly mode
+    if (markers.length === 0 && !readOnly) {
       const mainMarker = new mapboxgl.Marker({
-        draggable: true
+        draggable: !readOnly
       })
         .setLngLat([initialLng, initialLat])
         .addTo(map.current);
 
-      mainMarker.on('dragend', () => {
-        const lngLat = mainMarker.getLngLat();
-        onLocationSelected(lngLat.lat, lngLat.lng);
-      });
+      if (!readOnly) {
+        mainMarker.on('dragend', () => {
+          const lngLat = mainMarker.getLngLat();
+          onLocationSelected(lngLat.lat, lngLat.lng);
+        });
 
-      map.current.on('click', (e) => {
-        e.preventDefault();
-        const { lng, lat } = e.lngLat;
-        mainMarker.setLngLat([lng, lat]);
-        onLocationSelected(lat, lng);
-      });
+        map.current.on('click', (e) => {
+          e.preventDefault();
+          const { lng, lat } = e.lngLat;
+          mainMarker.setLngLat([lng, lat]);
+          onLocationSelected(lat, lng);
+        });
+      }
 
       markerRefs.current = [mainMarker];
     } else {
       // Add all provided markers
       markers.forEach(markerData => {
-        const marker = new mapboxgl.Marker()
+        const marker = new mapboxgl.Marker({
+          draggable: false
+        })
           .setLngLat([markerData.lng, markerData.lat])
           .addTo(map.current!);
 
@@ -96,13 +104,20 @@ const LocationPicker = ({
       }
     }
 
-    map.current.scrollZoom.enable();
+    if (!readOnly) {
+      map.current.scrollZoom.enable();
+    } else {
+      map.current.scrollZoom.disable();
+      map.current.dragPan.disable();
+      map.current.doubleClickZoom.disable();
+      map.current.touchZoomRotate.disable();
+    }
 
     return () => {
       markerRefs.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [initialLat, initialLng, markers]); 
+  }, [initialLat, initialLng, markers, readOnly]); 
 
   return (
     <div className="space-y-2">
@@ -112,3 +127,4 @@ const LocationPicker = ({
 };
 
 export default LocationPicker;
+

@@ -75,6 +75,14 @@ const PersonCard = ({
                 initialLat={person.latitude}
                 initialLng={person.longitude}
                 onLocationSelected={() => {}}
+                readOnly={true}
+                markers={[
+                  {
+                    lat: person.latitude,
+                    lng: person.longitude,
+                    popup: `<strong>${person.name}</strong><br/>Last seen: ${person.last_seen_location}`
+                  }
+                ]}
               />
             </div>
           )}
