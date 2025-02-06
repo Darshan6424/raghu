@@ -48,6 +48,13 @@ export type Database = {
             referencedRelation: "damage_reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_damage_report"
+            columns: ["damage_report_id"]
+            isOneToOne: false
+            referencedRelation: "damage_reports"
+            referencedColumns: ["id"]
+          },
         ]
       }
       damage_reports: {
@@ -145,6 +152,13 @@ export type Database = {
           user_likes?: string[] | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_missing_person"
+            columns: ["missing_person_id"]
+            isOneToOne: false
+            referencedRelation: "missing_persons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "missing_person_comments_missing_person_id_fkey"
             columns: ["missing_person_id"]
