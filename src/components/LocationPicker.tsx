@@ -19,10 +19,12 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYW53ZXNoMTMiLCJhIjoiY202dGhsMGExMDNmMjJscjN1dGdpYTB0cyJ9.UhrIpur7WpvGR5NmJDfbpQ';
     
-    // Nepal bounds
-    const nepalBounds = [
-      [80.0884, 26.3478], // Southwest coordinates
-      [88.2039, 30.4227]  // Northeast coordinates
+    // Nepal bounds - specified as [west, south, east, north]
+    const nepalBounds: [number, number, number, number] = [
+      80.0884, // west
+      26.3478, // south
+      88.2039, // east
+      30.4227  // north
     ];
 
     map.current = new mapboxgl.Map({
