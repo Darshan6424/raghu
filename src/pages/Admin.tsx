@@ -14,13 +14,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface User {
-  id: string;
-  email: string;
-  created_at: string;
-  role: string;
-}
-
 interface Report {
   id: string;
   created_at: string;
@@ -31,7 +24,6 @@ interface Report {
 const Admin = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
-  const [users, setUsers] = useState<User[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,24 +36,6 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: userRolesData } = await supabase
-          .from('user_roles')
-          .select(`
-            user_id,
-            role,
-            profiles:user_id (
-              id,
-              created_at
-            )
-          `);
-
-        const formattedUsers = (userRolesData || []).map(user => ({
-          id: user.profiles?.id || '',
-          email: user.user_id,
-          created_at: user.profiles?.created_at || new Date().toISOString(),
-          role: user.role
-        }));
-
         // Fetch all reports
         const [{ data: missingPersons }, { data: damageReports }] = await Promise.all([
           supabase.from('missing_persons').select('*'),
@@ -83,7 +57,6 @@ const Admin = () => {
           })) || [])
         ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-        setUsers(formattedUsers);
         setReports(formattedReports);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -102,68 +75,36 @@ const Admin = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold">Reports Dashboard</h1>
         <Button onClick={() => navigate('/')}>Back to Home</Button>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="users">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Created At</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-mono">{user.id}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabsContent>
-
-        <TabsContent value="reports">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Details</TableHead>
-                <TableHead>Created At</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell className="font-mono">{report.id}</TableCell>
-                  <TableCell>{report.type}</TableCell>
-                  <TableCell>
-                    {report.type === 'missing' ? (
-                      <span>{report.details.name} - {report.details.last_seen_location}</span>
-                    ) : (
-                      <span>{report.details.location} - {report.details.description}</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabsContent>
-      </Tabs>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Details</TableHead>
+            <TableHead>Created At</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {reports.map((report) => (
+            <TableRow key={report.id}>
+              <TableCell className="font-mono">{report.id}</TableCell>
+              <TableCell>{report.type}</TableCell>
+              <TableCell>
+                {report.type === 'missing' ? (
+                  <span>{report.details.name} - {report.details.last_seen_location}</span>
+                ) : (
+                  <span>{report.details.location} - {report.details.description}</span>
+                )}
+              </TableCell>
+              <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };

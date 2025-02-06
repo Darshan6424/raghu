@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
+import { Trash2 } from "lucide-react";
 
 interface MissingPerson {
   id: string;
@@ -129,6 +130,30 @@ const MissingPersonsList = () => {
     }
   };
 
+  const handleDelete = async (personId: string) => {
+    try {
+      const { error } = await supabase
+        .from('missing_persons')
+        .delete()
+        .eq('id', personId);
+
+      if (error) throw error;
+
+      setMissingPersons(prev => prev.filter(person => person.id !== personId));
+      toast({
+        title: "Success",
+        description: "Report deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete report",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCommentSubmit = async (personId: string) => {
     if (!session?.user) {
       toast({
@@ -217,13 +242,22 @@ const MissingPersonsList = () => {
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-gray-600">Status: {person.status}</p>
                 {session?.user?.id === person.reporter_id && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleStatusUpdate(person.id, person.status === 'found' ? 'missing' : 'found')}
-                  >
-                    Mark as {person.status === 'found' ? 'Missing' : 'Found'}
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStatusUpdate(person.id, person.status === 'found' ? 'missing' : 'found')}
+                    >
+                      Mark as {person.status === 'found' ? 'Missing' : 'Found'}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(person.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
               <p className="text-gray-600 mb-1">Contact: {person.reporter_contact}</p>
