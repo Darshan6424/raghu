@@ -19,11 +19,19 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYW53ZXNoMTMiLCJhIjoiY202dGhsMGExMDNmMjJscjN1dGdpYTB0cyJ9.UhrIpur7WpvGR5NmJDfbpQ';
     
+    // Nepal bounds
+    const nepalBounds = [
+      [80.0884, 26.3478], // Southwest coordinates
+      [88.2039, 30.4227]  // Northeast coordinates
+    ];
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [initialLng, initialLat],
-      zoom: 6
+      zoom: 7,
+      maxBounds: nepalBounds,
+      minZoom: 6 // Prevent zooming out too far
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -34,6 +42,7 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       .setLngLat([initialLng, initialLat])
       .addTo(map.current);
 
+    // Handle marker drag
     marker.current.on('dragend', () => {
       const lngLat = marker.current?.getLngLat();
       if (lngLat) {
@@ -41,15 +50,15 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
       }
     });
 
+    // Handle map click without reloading
     map.current.on('click', (e) => {
       e.preventDefault();
       const { lng, lat } = e.lngLat;
       
       if (marker.current) {
         marker.current.setLngLat([lng, lat]);
+        onLocationSelected(lat, lng);
       }
-      
-      onLocationSelected(lat, lng);
     });
 
     map.current.scrollZoom.enable();
@@ -57,7 +66,7 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
     return () => {
       map.current?.remove();
     };
-  }, [initialLat, initialLng, onLocationSelected]);
+  }, []); // Remove initialLat and initialLng from dependencies
 
   return (
     <div className="space-y-2">
