@@ -56,7 +56,9 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           verified: boolean | null
         }
         Insert: {
@@ -64,7 +66,9 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           verified?: boolean | null
         }
         Update: {
@@ -72,7 +76,9 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           verified?: boolean | null
         }
         Relationships: []
@@ -161,6 +167,8 @@ export type Database = {
           identifying_features: string | null
           image_url: string | null
           last_seen_location: string
+          latitude: number | null
+          longitude: number | null
           name: string
           reporter_contact: string | null
           reporter_id: string | null
@@ -174,6 +182,8 @@ export type Database = {
           identifying_features?: string | null
           image_url?: string | null
           last_seen_location: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           reporter_contact?: string | null
           reporter_id?: string | null
@@ -187,6 +197,8 @@ export type Database = {
           identifying_features?: string | null
           image_url?: string | null
           last_seen_location?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           reporter_contact?: string | null
           reporter_id?: string | null
