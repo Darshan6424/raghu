@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { initializeMap, createMarker, reverseGeocode, getCurrentLocation } from '@/utils/mapUtils';
 import LoadingSpinner from './LoadingSpinner';
@@ -12,6 +11,8 @@ interface LocationPickerProps {
   className?: string;
 }
 
+const MAPBOX_TOKEN = "pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbHRxbXZ2aHQwMnJpMmtyd2t4ZHRheGthIn0.a9yqwF6VsjsQ_G8pxLBzYw";
+
 const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, className = "h-[300px]" }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -19,61 +20,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const mountedRef = useRef(true);
-  const [token, setToken] = useState<string | null>(null);
-
-  // Fetch Mapbox token with retry mechanism
-  useEffect(() => {
-    const fetchMapboxToken = async (retryCount = 0) => {
-      try {
-        console.log('Fetching Mapbox token, attempt:', retryCount + 1);
-        const { data, error } = await supabase
-          .from('secrets')
-          .select('value')
-          .eq('name', 'MAPBOX_PUBLIC_TOKEN')
-          .maybeSingle();
-
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-
-        if (!data?.value) {
-          console.error('No Mapbox token found in secrets');
-          throw new Error('Mapbox token not found');
-        }
-
-        console.log('Successfully fetched Mapbox token');
-        setToken(data.value);
-      } catch (error) {
-        console.error('Failed to fetch Mapbox token:', error);
-        
-        // Retry logic
-        if (retryCount < 3) {
-          console.log('Retrying token fetch in 1 second...');
-          setTimeout(() => fetchMapboxToken(retryCount + 1), 1000);
-        } else {
-          toast({
-            title: "Configuration Error",
-            description: "Failed to load map configuration. Please refresh and try again.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchMapboxToken();
-
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [toast]);
 
   const handleLocationUpdate = async (lng: number, lat: number) => {
-    if (!mountedRef.current || !token) return;
+    if (!mountedRef.current) return;
     
     try {
-      const locationName = await reverseGeocode(lng, lat, token);
+      const locationName = await reverseGeocode(lng, lat, MAPBOX_TOKEN);
       if (mountedRef.current) {
         onLocationSelect(lat, lng, locationName);
       }
@@ -87,14 +39,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
     }
   };
 
-  // Initialize map once we have the token
+  // Initialize map with the token
   useEffect(() => {
-    if (!token || !mapContainer.current || !mountedRef.current) return;
+    if (!mapContainer.current || !mountedRef.current) return;
 
     try {
-      console.log('Initializing map with token');
-      mapboxgl.accessToken = token;
-      map.current = initializeMap(mapContainer.current, token);
+      console.log('Initializing map');
+      mapboxgl.accessToken = MAPBOX_TOKEN;
+      map.current = initializeMap(mapContainer.current, MAPBOX_TOKEN);
 
       map.current.on('load', () => {
         if (!mountedRef.current) return;
@@ -174,7 +126,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         setIsLoading(false);
       }
     }
-  }, [token, toast]);
+  }, [toast]);
 
   return (
     <div className="relative">
