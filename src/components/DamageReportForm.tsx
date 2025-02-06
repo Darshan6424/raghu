@@ -7,7 +7,6 @@ import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import LocationPicker from "./LocationPicker";
 
 const DamageReportForm = () => {
   const { toast } = useToast();
@@ -17,8 +16,6 @@ const DamageReportForm = () => {
     location: "",
     description: "",
     image: null as File | null,
-    latitude: null as number | null,
-    longitude: null as number | null
   });
 
   const handleImageUpload = async (file: File) => {
@@ -56,8 +53,6 @@ const DamageReportForm = () => {
           location: damageReport.location,
           description: damageReport.description,
           image_url: imageUrl,
-          latitude: damageReport.latitude,
-          longitude: damageReport.longitude
         }]);
 
       if (error) throw error;
@@ -80,15 +75,6 @@ const DamageReportForm = () => {
     }
   };
 
-  const handleLocationSelect = (latitude: number, longitude: number, locationName: string) => {
-    setDamageReport(prev => ({
-      ...prev,
-      location: locationName,
-      latitude,
-      longitude
-    }));
-  };
-
   return (
     <section id="damage-report" className="min-h-screen py-20 px-4">
       <div className="max-w-3xl mx-auto">
@@ -99,18 +85,12 @@ const DamageReportForm = () => {
           </Button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Location
-            </label>
-            <LocationPicker onLocationSelect={handleLocationSelect} />
-            <Input
-              placeholder="Location"
-              value={damageReport.location}
-              onChange={(e) => setDamageReport({ ...damageReport, location: e.target.value })}
-              required
-            />
-          </div>
+          <Input
+            placeholder="Location"
+            value={damageReport.location}
+            onChange={(e) => setDamageReport({ ...damageReport, location: e.target.value })}
+            required
+          />
           <Textarea
             placeholder="Describe the damage"
             value={damageReport.description}

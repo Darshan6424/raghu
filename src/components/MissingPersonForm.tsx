@@ -7,7 +7,6 @@ import { Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import LocationPicker from "./LocationPicker";
 
 const MissingPersonForm = () => {
   const { toast } = useToast();
@@ -21,8 +20,6 @@ const MissingPersonForm = () => {
     features: "",
     contact: "",
     image: null as File | null,
-    latitude: null as number | null,
-    longitude: null as number | null
   });
 
   const handleImageUpload = async (file: File) => {
@@ -64,8 +61,6 @@ const MissingPersonForm = () => {
           identifying_features: missingPerson.features,
           reporter_contact: missingPerson.contact,
           image_url: imageUrl,
-          latitude: missingPerson.latitude,
-          longitude: missingPerson.longitude
         }]);
 
       if (error) throw error;
@@ -88,15 +83,6 @@ const MissingPersonForm = () => {
     }
   };
 
-  const handleLocationSelect = (latitude: number, longitude: number, locationName: string) => {
-    setMissingPerson(prev => ({
-      ...prev,
-      lastSeen: locationName,
-      latitude,
-      longitude
-    }));
-  };
-
   return (
     <section id="report-missing" className="min-h-screen py-20 px-4 bg-gray-50">
       <div className="max-w-3xl mx-auto">
@@ -113,18 +99,12 @@ const MissingPersonForm = () => {
             onChange={(e) => setMissingPerson({ ...missingPerson, name: e.target.value })}
             required
           />
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Last Seen Location
-            </label>
-            <LocationPicker onLocationSelect={handleLocationSelect} />
-            <Input
-              placeholder="Last Seen Location"
-              value={missingPerson.lastSeen}
-              onChange={(e) => setMissingPerson({ ...missingPerson, lastSeen: e.target.value })}
-              required
-            />
-          </div>
+          <Input
+            placeholder="Last Seen Location"
+            value={missingPerson.lastSeen}
+            onChange={(e) => setMissingPerson({ ...missingPerson, lastSeen: e.target.value })}
+            required
+          />
           <div className="grid grid-cols-2 gap-4">
             <Input
               placeholder="Age"
