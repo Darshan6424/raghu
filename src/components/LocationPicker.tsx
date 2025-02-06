@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useToast } from "@/hooks/use-toast";
 
 interface Marker {
   lat: number;
@@ -27,6 +28,7 @@ const LocationPicker = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markerRefs = useRef<mapboxgl.Marker[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -40,84 +42,102 @@ const LocationPicker = ({
       30.4227  // north
     ];
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [initialLng, initialLat],
-      zoom: 7,
-      maxBounds: nepalBounds,
-      minZoom: 6,
-      dragRotate: !readOnly,
-      scrollZoom: !readOnly
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // Add main marker if no markers provided and not in readOnly mode
-    if (markers.length === 0 && !readOnly) {
-      const mainMarker = new mapboxgl.Marker({
-        draggable: !readOnly
-      })
-        .setLngLat([initialLng, initialLat])
-        .addTo(map.current);
-
-      if (!readOnly) {
-        mainMarker.on('dragend', () => {
-          const lngLat = mainMarker.getLngLat();
-          onLocationSelected(lngLat.lat, lngLat.lng);
-        });
-
-        map.current.on('click', (e) => {
-          e.preventDefault();
-          const { lng, lat } = e.lngLat;
-          mainMarker.setLngLat([lng, lat]);
-          onLocationSelected(lat, lng);
-        });
-      }
-
-      markerRefs.current = [mainMarker];
-    } else {
-      // Add all provided markers
-      markers.forEach(markerData => {
-        const marker = new mapboxgl.Marker({
-          draggable: false
-        })
-          .setLngLat([markerData.lng, markerData.lat])
-          .addTo(map.current!);
-
-        if (markerData.popup) {
-          const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML(markerData.popup);
-          marker.setPopup(popup);
-        }
-
-        markerRefs.current.push(marker);
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [initialLng, initialLat],
+        zoom: 7,
+        maxBounds: nepalBounds,
+        minZoom: 6,
+        dragRotate: !readOnly,
+        scrollZoom: !readOnly
       });
 
-      // Fit bounds to show all markers
-      if (markers.length > 1) {
-        const bounds = new mapboxgl.LngLatBounds();
-        markers.forEach(marker => {
-          bounds.extend([marker.lng, marker.lat]);
+      // Add error handling
+      map.current.on('error', (e) => {
+        console.error('Map error:', e);
+        toast({
+          title: "Map Error",
+          description: "There was an error loading the map. Please try again.",
+          variant: "destructive"
         });
-        map.current.fitBounds(bounds, { padding: 50 });
-      }
-    }
+      });
 
-    if (!readOnly) {
-      map.current.scrollZoom.enable();
-    } else {
-      map.current.scrollZoom.disable();
-      map.current.dragPan.disable();
-      map.current.doubleClickZoom.disable();
-      map.current.touchZoomRotate.disable();
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Add main marker if no markers provided and not in readOnly mode
+      if (markers.length === 0 && !readOnly) {
+        const mainMarker = new mapboxgl.Marker({
+          draggable: !readOnly
+        })
+          .setLngLat([initialLng, initialLat])
+          .addTo(map.current);
+
+        if (!readOnly) {
+          mainMarker.on('dragend', () => {
+            const lngLat = mainMarker.getLngLat();
+            onLocationSelected(lngLat.lat, lngLat.lng);
+          });
+
+          map.current.on('click', (e) => {
+            const { lng, lat } = e.lngLat;
+            mainMarker.setLngLat([lng, lat]);
+            onLocationSelected(lat, lng);
+          });
+        }
+
+        markerRefs.current = [mainMarker];
+      } else {
+        // Add all provided markers
+        markers.forEach(markerData => {
+          const marker = new mapboxgl.Marker({
+            draggable: false
+          })
+            .setLngLat([markerData.lng, markerData.lat])
+            .addTo(map.current!);
+
+          if (markerData.popup) {
+            const popup = new mapboxgl.Popup({ offset: 25 })
+              .setHTML(markerData.popup);
+            marker.setPopup(popup);
+          }
+
+          markerRefs.current.push(marker);
+        });
+
+        // Fit bounds to show all markers
+        if (markers.length > 1) {
+          const bounds = new mapboxgl.LngLatBounds();
+          markers.forEach(marker => {
+            bounds.extend([marker.lng, marker.lat]);
+          });
+          map.current.fitBounds(bounds, { padding: 50 });
+        }
+      }
+
+      if (!readOnly) {
+        map.current.scrollZoom.enable();
+      } else {
+        map.current.scrollZoom.disable();
+        map.current.dragPan.disable();
+        map.current.doubleClickZoom.disable();
+        map.current.touchZoomRotate.disable();
+      }
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast({
+        title: "Map Error",
+        description: "There was an error initializing the map. Please try again.",
+        variant: "destructive"
+      });
     }
 
     return () => {
       markerRefs.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [initialLat, initialLng, markers, readOnly]); 
+  }, [initialLat, initialLng, markers, readOnly, onLocationSelected, toast]); 
 
   return (
     <div className="space-y-2">
@@ -127,4 +147,3 @@ const LocationPicker = ({
 };
 
 export default LocationPicker;
-
