@@ -20,7 +20,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
       if (!mapContainer.current) return;
 
       // Get the Mapbox token from Supabase
-      const { data: { MAPBOX_PUBLIC_TOKEN }, error } = await supabase
+      const { data, error } = await supabase
         .from('secrets')
         .select('value')
         .eq('name', 'MAPBOX_PUBLIC_TOKEN')
@@ -31,7 +31,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
         return;
       }
 
-      mapboxgl.accessToken = MAPBOX_PUBLIC_TOKEN;
+      mapboxgl.accessToken = data.value;
       
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
