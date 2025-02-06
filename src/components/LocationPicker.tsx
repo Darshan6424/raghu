@@ -4,6 +4,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { initializeMap, createMarker, reverseGeocode, getCurrentLocation } from '@/utils/mapUtils';
+import LoadingSpinner from './LoadingSpinner';
 
 interface LocationPickerProps {
   onLocationSelect: (latitude: number, longitude: number, location: string) => void;
@@ -14,157 +16,108 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [isDestroyed, setIsDestroyed] = useState(false);
+  const { toast } = useToast();
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    const initializeMap = async () => {
-      if (!mapContainer.current || isDestroyed) return;
+    return () => {
+      mountedRef.current = false;
+      if (marker.current) {
+        marker.current.remove();
+        marker.current = null;
+      }
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+  const handleLocationUpdate = async (lng: number, lat: number, token: string) => {
+    if (!mountedRef.current) return;
+    
+    const locationName = await reverseGeocode(lng, lat, token);
+    if (mountedRef.current) {
+      onLocationSelect(lat, lng, locationName);
+    }
+  };
+
+  useEffect(() => {
+    const setupMap = async () => {
+      if (!mapContainer.current || !mountedRef.current) return;
 
       try {
-        console.log('Fetching Mapbox token...');
         const { data: secretData, error: secretError } = await supabase
           .from('secrets')
           .select('value')
           .eq('name', 'MAPBOX_PUBLIC_TOKEN')
           .maybeSingle();
 
-        if (secretError) {
-          console.error('Error fetching Mapbox token:', secretError);
-          toast({
-            title: "Error",
-            description: "Failed to load the map configuration. Please try again later.",
-            variant: "destructive",
-          });
+        if (secretError) throw secretError;
+        if (!secretData?.value) throw new Error('Mapbox token not found');
+
+        const token = secretData.value;
+        mapboxgl.accessToken = token;
+
+        if (!mountedRef.current) return;
+
+        map.current = initializeMap(mapContainer.current, token);
+        marker.current = createMarker();
+
+        map.current.on('load', () => {
+          if (!mountedRef.current) return;
           setIsLoading(false);
-          return;
-        }
-
-        if (!secretData?.value) {
-          console.error('Mapbox token not found');
-          toast({
-            title: "Error",
-            description: "Map configuration is missing. Please ensure the MAPBOX_PUBLIC_TOKEN is set in Supabase.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        console.log('Mapbox token retrieved successfully');
-        mapboxgl.accessToken = secretData.value;
-
-        if (!mapContainer.current || isDestroyed) return;
-
-        console.log('Initializing map...');
-        const newMap = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/streets-v12',
-          center: [0, 0],
-          zoom: 2
         });
 
-        if (isDestroyed) {
-          newMap.remove();
-          return;
-        }
-
-        map.current = newMap;
-
-        newMap.on('load', () => {
-          if (!isDestroyed) {
-            console.log('Map loaded successfully');
-            setMapLoaded(true);
-            setIsLoading(false);
-          }
-        });
-
-        newMap.on('error', (e) => {
+        map.current.on('error', (e) => {
           console.error('Map error:', e);
-          if (!isDestroyed) {
+          if (!mountedRef.current) return;
+          toast({
+            title: "Map Error",
+            description: "There was an error loading the map. Please refresh the page.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+        });
+
+        try {
+          const position = await getCurrentLocation();
+          if (!mountedRef.current || !map.current || !marker.current) return;
+
+          const { latitude, longitude } = position.coords;
+          map.current.setCenter([longitude, latitude]);
+          map.current.setZoom(13);
+          marker.current.setLngLat([longitude, latitude]).addTo(map.current);
+          handleLocationUpdate(longitude, latitude, token);
+        } catch (error) {
+          console.log('User location not available');
+          if (mountedRef.current) {
             toast({
-              title: "Map Error",
-              description: "There was an error loading the map. Please refresh the page.",
-              variant: "destructive",
+              title: "Location Notice",
+              description: "Select a location by clicking on the map",
             });
-            setIsLoading(false);
           }
-        });
-
-        newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        
-        marker.current = new mapboxgl.Marker({
-          draggable: true
-        });
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              if (isDestroyed) return;
-              const { latitude, longitude } = position.coords;
-              newMap.setCenter([longitude, latitude]);
-              newMap.setZoom(13);
-              marker.current?.setLngLat([longitude, latitude]).addTo(newMap);
-              
-              fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`)
-                .then(response => response.json())
-                .then(data => {
-                  if (!isDestroyed) {
-                    const locationName = data.features[0]?.place_name || '';
-                    onLocationSelect(latitude, longitude, locationName);
-                  }
-                })
-                .catch(error => {
-                  console.error('Geocoding error:', error);
-                });
-            },
-            () => {
-              if (!isDestroyed) {
-                console.log('User location not available');
-                toast({
-                  title: "Location Notice",
-                  description: "Select a location by clicking on the map",
-                });
-              }
-            }
-          );
         }
 
-        newMap.on('click', (e) => {
-          if (isDestroyed) return;
+        map.current.on('click', (e) => {
+          if (!mountedRef.current || !marker.current || !map.current) return;
           const { lng, lat } = e.lngLat;
-          marker.current?.setLngLat([lng, lat]).addTo(newMap);
-          
-          fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`)
-            .then(response => response.json())
-            .then(data => {
-              if (!isDestroyed) {
-                const locationName = data.features[0]?.place_name || '';
-                onLocationSelect(lat, lng, locationName);
-              }
-            });
+          marker.current.setLngLat([lng, lat]).addTo(map.current);
+          handleLocationUpdate(lng, lat, token);
         });
 
-        marker.current.on('dragend', () => {
-          if (isDestroyed) return;
-          const lngLat = marker.current?.getLngLat();
-          if (lngLat) {
-            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`)
-              .then(response => response.json())
-              .then(data => {
-                if (!isDestroyed) {
-                  const locationName = data.features[0]?.place_name || '';
-                  onLocationSelect(lngLat.lat, lngLat.lng, locationName);
-                }
-              });
-          }
-        });
+        if (marker.current) {
+          marker.current.on('dragend', () => {
+            if (!mountedRef.current || !marker.current) return;
+            const lngLat = marker.current.getLngLat();
+            handleLocationUpdate(lngLat.lng, lngLat.lat, token);
+          });
+        }
 
       } catch (error) {
         console.error('Map initialization error:', error);
-        if (!isDestroyed) {
+        if (mountedRef.current) {
           toast({
             title: "Error",
             description: "Failed to initialize the map. Please refresh the page.",
@@ -175,29 +128,13 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, class
       }
     };
 
-    initializeMap();
-
-    return () => {
-      setIsDestroyed(true);
-      if (marker.current) {
-        marker.current.remove();
-        marker.current = null;
-      }
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
+    setupMap();
   }, [onLocationSelect, toast]);
 
   return (
     <div className="relative">
       <div ref={mapContainer} className={`w-full ${className} rounded-md`} />
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 rounded-md">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      )}
+      {isLoading && <LoadingSpinner />}
     </div>
   );
 };
