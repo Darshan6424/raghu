@@ -1,7 +1,9 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Input } from './ui/input';
+import { Search } from 'lucide-react';
 
 interface LocationPickerProps {
   onLocationSelected: (lat: number, lng: number) => void;
@@ -13,6 +15,39 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
+  const [searchInput, setSearchInput] = useState('');
+
+  const handleSearch = async () => {
+    if (!searchInput.trim()) return;
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          searchInput
+        )}.json?access_token=${mapboxgl.accessToken}`
+      );
+      const data = await response.json();
+
+      if (data.features && data.features.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        
+        // Update marker position
+        marker.current?.setLngLat([lng, lat]);
+        
+        // Fly to the location
+        map.current?.flyTo({
+          center: [lng, lat],
+          zoom: 14,
+          essential: true
+        });
+
+        // Trigger the location selected callback
+        onLocationSelected(lat, lng);
+      }
+    } catch (error) {
+      console.error('Error searching location:', error);
+    }
+  };
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -22,7 +57,7 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: [initialLng, initialLat], // Center on Nepal
+      center: [initialLng, initialLat],
       zoom: 6
     });
 
@@ -57,7 +92,26 @@ const LocationPicker = ({ onLocationSelected, initialLat = 28.3949, initialLng =
   }, [initialLat, initialLng, onLocationSelected]);
 
   return (
-    <div ref={mapContainer} className="w-full h-[300px] rounded-lg mb-4" />
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          placeholder="Search location..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          className="flex-1"
+        />
+        <button
+          onClick={handleSearch}
+          className="p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          aria-label="Search location"
+        >
+          <Search className="h-5 w-5" />
+        </button>
+      </div>
+      <div ref={mapContainer} className="w-full h-[300px] rounded-lg mb-4" />
+    </div>
   );
 };
 
