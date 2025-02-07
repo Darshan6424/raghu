@@ -73,7 +73,7 @@ const PersonExpandedDetails = ({
           <h2 className="flex items-baseline gap-2 mb-4">
             <span className="text-2xl">Can You</span>
             <span className="text-[#ea384c] text-3xl font-bold">HELP?</span>
-          </div>
+          </h2>
 
           <Input
             placeholder="Comment Any clues"
