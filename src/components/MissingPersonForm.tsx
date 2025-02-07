@@ -15,6 +15,7 @@ const MissingPersonForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { session } = useAuth();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [missingPerson, setMissingPerson] = useState({
     name: "",
     lastSeen: "",
@@ -63,6 +64,18 @@ const MissingPersonForm = () => {
       latitude: lat,
       longitude: lng
     }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMissingPerson({ ...missingPerson, image: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,24 +129,46 @@ const MissingPersonForm = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid md:grid-cols-[300px,1fr] gap-8">
             {/* Image Upload Section */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center space-y-4 bg-white">
-              <div className="w-16 h-16 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
-                <Plus className="w-8 h-8 text-[#ea384c]" />
-              </div>
-              <span className="text-gray-600">Add Photo</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setMissingPerson({ ...missingPerson, image: e.target.files?.[0] || null })}
-                className="hidden"
-                id="photo-upload"
-              />
-              <label
-                htmlFor="photo-upload"
-                className="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
-              >
-                Click to upload
-              </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center space-y-4 bg-white relative">
+              {imagePreview ? (
+                <div className="w-full h-[250px] relative">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview(null);
+                      setMissingPerson({ ...missingPerson, image: null });
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full"
+                  >
+                    ×
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
+                    <Plus className="w-8 h-8 text-[#ea384c]" />
+                  </div>
+                  <span className="text-gray-600">Add Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="photo-upload"
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Click to upload
+                  </label>
+                </>
+              )}
             </div>
 
             {/* Form Fields */}
