@@ -34,7 +34,7 @@ const PersonExpandedDetails = ({
         <div className="grid grid-cols-[300px,1fr] gap-8">
           {/* Left column with photo and Mark as Found button */}
           <div className="space-y-4">
-            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2 h-[300px]">
+            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2">
               <div className="absolute top-2 left-2 z-10">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-[#ea384c] text-white flex items-center justify-center">
@@ -50,7 +50,7 @@ const PersonExpandedDetails = ({
                 </div>
               </div>
 
-              <div className="w-full h-full bg-white rounded-lg overflow-hidden">
+              <div className="w-[300px] h-[300px] bg-white rounded-lg overflow-hidden">
                 {person.image_url ? (
                   <img
                     src={person.image_url}
@@ -208,3 +208,4 @@ const PersonExpandedDetails = ({
 };
 
 export default PersonExpandedDetails;
+
