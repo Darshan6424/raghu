@@ -45,7 +45,7 @@ const MissingPersonsList = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-[#ea384c]">Loading...</div>
+        <div className="animate-pulse text-[#C70039]">Loading...</div>
       </div>
     );
   }
@@ -53,7 +53,7 @@ const MissingPersonsList = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-[1200px] mx-auto px-4">
-        <h1 className="text-4xl font-bold text-[#ea384c] text-center mb-12">
+        <h1 className="text-4xl font-bold text-[#C70039] text-center mb-12">
           Previous Missing Reports
         </h1>
 
@@ -63,14 +63,14 @@ const MissingPersonsList = () => {
               key={person.id}
               className="relative bg-white rounded-3xl shadow-lg overflow-hidden transform transition-transform hover:scale-105"
             >
-              <div className="absolute -left-2 -top-2 w-10 h-10 bg-[#ea384c] rounded-full flex items-center justify-center text-white font-bold z-10">
+              <div className="absolute -left-2 -top-2 w-10 h-10 bg-[#C70039] rounded-full flex items-center justify-center text-white font-bold z-10">
                 {index + 1}
               </div>
               
               <div className="absolute left-4 top-4">
                 <Button
                   variant="link"
-                  className="text-[#ea384c] hover:text-[#d42d3f] font-semibold p-0"
+                  className="text-[#C70039] hover:text-[#a30030] font-semibold p-0"
                   onClick={() => navigate(`/missing-persons/${person.id}`)}
                 >
                   See More
@@ -85,17 +85,15 @@ const MissingPersonsList = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
-                    Photo
-                    <br />
-                    (submitted before by users)
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-center p-4">
+                    No photo available
                   </div>
                 )}
               </div>
 
-              <div className="bg-[#ea384c] text-white p-4">
+              <div className="bg-[#C70039] text-white p-4">
                 <p className="text-center text-lg">
-                  {person.name} - {person.age || 'Unknown'} Age
+                  {person.name} {person.age ? `- ${person.age} years` : ''}
                 </p>
               </div>
             </div>
@@ -105,7 +103,7 @@ const MissingPersonsList = () => {
         <div className="mt-8 flex justify-center">
           <Button 
             onClick={() => navigate('/')}
-            className="bg-white text-[#ea384c] border-2 border-[#ea384c] hover:bg-[#ea384c] hover:text-white transition-colors"
+            className="bg-white text-[#C70039] border-2 border-[#C70039] hover:bg-[#C70039] hover:text-white transition-colors"
           >
             Back to Home
           </Button>
