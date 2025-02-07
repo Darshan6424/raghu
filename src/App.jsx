@@ -10,7 +10,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import MissingPersonsList from "./pages/MissingPersonsList";
 import DamageReportsList from "./pages/DamageReportsList";
-import MissingPersonDetails from "./pages/MissingPersonDetails"; // Add this import
+import MissingPersonDetails from "./pages/MissingPersonDetails";
 
 const queryClient = new QueryClient();
 
@@ -37,3 +37,4 @@ const App = () => (
 );
 
 export default App;
+
