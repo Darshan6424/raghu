@@ -10,9 +10,9 @@ interface ImageUploadSectionProps {
 
 const ImageUploadSection = ({ imagePreview, onImageChange, onImageRemove }: ImageUploadSectionProps) => {
   return (
-    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center space-y-4 bg-white relative">
+    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center space-y-4 bg-white relative h-[200px]">
       {imagePreview ? (
-        <div className="w-full h-[250px] relative">
+        <div className="w-full h-full relative">
           <img 
             src={imagePreview} 
             alt="Preview" 
@@ -28,10 +28,10 @@ const ImageUploadSection = ({ imagePreview, onImageChange, onImageRemove }: Imag
         </div>
       ) : (
         <>
-          <div className="w-16 h-16 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
-            <Plus className="w-8 h-8 text-[#ea384c]" />
+          <div className="w-12 h-12 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
+            <Plus className="w-6 h-6 text-[#ea384c]" />
           </div>
-          <span className="text-gray-600">Add Photo</span>
+          <span className="text-gray-600 text-sm">Add Photo</span>
           <input
             type="file"
             accept="image/*"
