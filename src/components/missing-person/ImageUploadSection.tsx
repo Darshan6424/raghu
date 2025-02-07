@@ -10,7 +10,7 @@ interface ImageUploadSectionProps {
 
 const ImageUploadSection = ({ imagePreview, onImageChange, onImageRemove }: ImageUploadSectionProps) => {
   return (
-    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center space-y-4 bg-white relative">
+    <div className="relative">
       {imagePreview ? (
         <div className="w-full h-[250px] relative">
           <img 
@@ -27,11 +27,9 @@ const ImageUploadSection = ({ imagePreview, onImageChange, onImageRemove }: Imag
           </Button>
         </div>
       ) : (
-        <>
-          <div className="w-16 h-16 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
-            <Plus className="w-8 h-8 text-[#ea384c]" />
-          </div>
-          <span className="text-gray-600">Add Photo</span>
+        <div className="w-[200px] h-[200px] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2">
+          <Plus className="w-6 h-6 text-[#ea384c]" />
+          <span className="text-gray-600 text-sm">Add Photo</span>
           <input
             type="file"
             accept="image/*"
@@ -41,11 +39,10 @@ const ImageUploadSection = ({ imagePreview, onImageChange, onImageRemove }: Imag
           />
           <label
             htmlFor="photo-upload"
-            className="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
-          >
-            Click to upload
-          </label>
-        </>
+            className="absolute inset-0 cursor-pointer"
+            aria-label="Upload photo"
+          />
+        </div>
       )}
     </div>
   );
