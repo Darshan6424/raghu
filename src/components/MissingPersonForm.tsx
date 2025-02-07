@@ -1,14 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import LocationPicker from "./LocationPicker";
 import { useAuth } from "./AuthProvider";
+import ImageUploadSection from "./missing-person/ImageUploadSection";
+import PersonalDetailsForm from "./missing-person/PersonalDetailsForm";
 
 const MissingPersonForm = () => {
   const { toast } = useToast();
@@ -78,6 +77,13 @@ const MissingPersonForm = () => {
     }
   };
 
+  const handleFormChange = (field: string, value: string) => {
+    setMissingPerson(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -136,97 +142,25 @@ const MissingPersonForm = () => {
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid md:grid-cols-[300px,1fr] gap-8">
-            {/* Image Upload Section */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center space-y-4 bg-white relative">
-              {imagePreview ? (
-                <div className="w-full h-[250px] relative">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setImagePreview(null);
-                      setMissingPerson({ ...missingPerson, image: null });
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full"
-                  >
-                    ×
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="w-16 h-16 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
-                    <Plus className="w-8 h-8 text-[#ea384c]" />
-                  </div>
-                  <span className="text-gray-600">Add Photo</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="photo-upload"
-                  />
-                  <label
-                    htmlFor="photo-upload"
-                    className="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    Click to upload
-                  </label>
-                </>
-              )}
-            </div>
-
-            {/* Form Fields */}
-            <div className="space-y-4">
-              <Input
-                placeholder="Name of the Lost Person"
-                value={missingPerson.name}
-                onChange={(e) => setMissingPerson({ ...missingPerson, name: e.target.value })}
-                required
-                className="border-2 rounded-lg py-3 px-4"
-              />
-              <Input
-                placeholder="Last Seen At"
-                value={missingPerson.lastSeen}
-                onChange={(e) => setMissingPerson({ ...missingPerson, lastSeen: e.target.value })}
-                required
-                className="border-2 rounded-lg py-3 px-4"
-              />
-              <div className="grid grid-cols-[1fr,1fr,2fr] gap-4">
-                <Input
-                  placeholder="Age"
-                  type="number"
-                  value={missingPerson.age}
-                  onChange={(e) => setMissingPerson({ ...missingPerson, age: e.target.value })}
-                  className="border-2 rounded-lg py-3 px-4"
-                />
-                <Input
-                  placeholder="Gender"
-                  value={missingPerson.gender}
-                  onChange={(e) => setMissingPerson({ ...missingPerson, gender: e.target.value })}
-                  className="border-2 rounded-lg py-3 px-4"
-                />
-                <Input
-                  placeholder="Phone Number (Yours)"
-                  value={missingPerson.contact}
-                  onChange={(e) => setMissingPerson({ ...missingPerson, contact: e.target.value })}
-                  required
-                  className="border-2 rounded-lg py-3 px-4"
-                />
-              </div>
-              <Textarea
-                placeholder="Identifying Features"
-                value={missingPerson.features}
-                onChange={(e) => setMissingPerson({ ...missingPerson, features: e.target.value })}
-                className="border-2 rounded-lg py-3 px-4 min-h-[100px]"
-              />
-            </div>
+            <ImageUploadSection
+              imagePreview={imagePreview}
+              onImageChange={handleImageChange}
+              onImageRemove={() => {
+                setImagePreview(null);
+                setMissingPerson({ ...missingPerson, image: null });
+              }}
+            />
+            <PersonalDetailsForm
+              name={missingPerson.name}
+              lastSeen={missingPerson.lastSeen}
+              age={missingPerson.age}
+              gender={missingPerson.gender}
+              features={missingPerson.features}
+              contact={missingPerson.contact}
+              onChange={handleFormChange}
+            />
           </div>
 
-          {/* Map Section */}
           <div className="border-2 rounded-lg p-4 bg-white">
             <LocationPicker
               onLocationSelected={handleLocationSelected}
