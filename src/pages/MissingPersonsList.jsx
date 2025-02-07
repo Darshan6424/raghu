@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
@@ -137,17 +136,18 @@ const MissingPersonsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#f5f5f5] py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Missing Persons Reports</h1>
-          <Button onClick={() => navigate('/')}>Back to Home</Button>
+          <h1 className="text-2xl font-semibold text-gray-900">Missing Persons Reports</h1>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {missingPersons.map((person) => (
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {missingPersons.map((person, index) => (
             <PersonCard
               key={person.id}
               person={person}
+              index={index + 1}
               comments={comments[person.id] || []}
               session={session}
               onStatusUpdate={handleStatusUpdate}

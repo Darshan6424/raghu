@@ -8,29 +8,32 @@ const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
         <img
           src={person.image_url}
           alt={`${person.name}'s photo`}
-          className="w-full h-64 object-cover bg-white"
+          className="w-full h-[280px] object-cover"
         />
       ) : (
-        <div className="w-full h-64 bg-white flex items-center justify-center text-gray-500">
-          <span>Photo<br/>(submitted before by users)</span>
+        <div className="w-full h-[280px] bg-gray-100 flex items-center justify-center text-gray-400">
+          <span className="text-sm">No photo available</span>
         </div>
       )}
       
-      <div className="absolute top-4 left-4">
+      <div className="absolute top-4 right-4">
         <Button
-          variant="link"
-          className="text-[#ea384c] hover:text-[#ea384c]/80 font-medium p-0"
+          variant="outline"
+          className="bg-white hover:bg-gray-50 text-gray-700"
           onClick={onToggleExpand}
         >
-          See More
+          {isExpanded ? 'See Less' : 'See More'}
         </Button>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-[#ea384c] text-white py-3 px-4">
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{person.name}</span>
-          <span>-</span>
-          <span>{person.age}</span>
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent pt-16 pb-4 px-4">
+        <div className="text-white">
+          <h3 className="text-xl font-semibold mb-1">{person.name}</h3>
+          <div className="flex items-center gap-2 text-sm">
+            <span>{person.age} years old</span>
+            <span>•</span>
+            <span>{person.gender}</span>
+          </div>
         </div>
       </div>
     </div>

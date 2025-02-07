@@ -32,10 +32,10 @@ const PersonCard = ({
 
   return (
     <div className="relative">
-      <div className="absolute -top-4 -left-4 w-10 h-10 bg-[#ea384c] rounded-full flex items-center justify-center text-white font-bold z-10">
+      <div className="absolute -top-4 -left-4 w-8 h-8 bg-[#ea384c] rounded-full flex items-center justify-center text-white font-medium text-sm z-10">
         {index}
       </div>
-      <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <PersonImage 
           person={person} 
           isExpanded={isExpanded} 
@@ -43,7 +43,7 @@ const PersonCard = ({
         />
 
         {isExpanded && (
-          <div className="p-4">
+          <div className="p-6">
             <PersonExpandedDetails 
               person={person}
               isOwner={isOwner}

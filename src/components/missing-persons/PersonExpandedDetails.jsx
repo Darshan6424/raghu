@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { MapPin, MessageSquare, Camera } from "lucide-react";
+import { MapPin, MessageSquare } from "lucide-react";
 import LocationPicker from "../LocationPicker";
 import {
   AlertDialog,
@@ -24,50 +24,38 @@ const PersonExpandedDetails = ({
   onToggleComments 
 }) => {
   return (
-    <div className="space-y-4">
-      <div className="text-xl font-semibold mb-4">{person.name}</div>
-      
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-6">
         <div>
-          <p className="text-gray-500 text-sm">Identifying Features:</p>
-          <p>{person.identifying_features || "Not provided"}</p>
+          <p className="text-gray-500 text-sm font-medium mb-2">Details</p>
+          <p className="text-gray-900">{person.identifying_features || "Not provided"}</p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-gray-500 text-sm">Age:</p>
-            <p>{person.age || "Not provided"}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Gender:</p>
-            <p>{person.gender || "Not provided"}</p>
-          </div>
+        <div>
+          <p className="text-gray-500 text-sm font-medium mb-2">Contact Information</p>
+          <p className="text-gray-900">{person.reporter_contact}</p>
         </div>
       </div>
 
       <div>
-        <p className="text-gray-500 text-sm">Contact Information:</p>
-        <p>{person.reporter_contact}</p>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <div className="flex-grow">
-          <p className="text-gray-500 text-sm">Last Seen at:</p>
-          <p>{person.last_seen_location}</p>
+        <p className="text-gray-500 text-sm font-medium mb-2">Last Seen Location</p>
+        <div className="flex items-center justify-between">
+          <p className="text-gray-900">{person.last_seen_location}</p>
+          {person.latitude && person.longitude && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onShowMapToggle}
+              className="text-gray-700"
+            >
+              <MapPin className="h-4 w-4 mr-2" />
+              View on Map
+            </Button>
+          )}
         </div>
-        {person.latitude && person.longitude && (
-          <Button
-            variant="outline"
-            className="text-[#ea384c] border-[#ea384c] hover:bg-[#ea384c] hover:text-white"
-            onClick={onShowMapToggle}
-          >
-            <MapPin className="h-4 w-4 mr-2" />
-            View Location
-          </Button>
-        )}
       </div>
 
       {showMap && person.latitude && person.longitude && (
-        <div className="mt-2 rounded-lg overflow-hidden border">
+        <div className="rounded-lg overflow-hidden border h-[300px]">
           <LocationPicker
             initialLat={person.latitude}
             initialLng={person.longitude}
@@ -77,7 +65,7 @@ const PersonExpandedDetails = ({
               {
                 lat: person.latitude,
                 lng: person.longitude,
-                popup: `<strong>${person.name}</strong><br/>Last seen: ${person.last_seen_location}`
+                popup: `${person.name} was last seen here`
               }
             ]}
           />
@@ -85,25 +73,25 @@ const PersonExpandedDetails = ({
       )}
 
       {isOwner && (
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
             variant="default"
             onClick={() => onStatusUpdate(person.id, person.status === 'found' ? 'missing' : 'found')}
-            className="bg-[#ea384c] text-white hover:bg-[#d42d3f]"
+            className="w-full bg-[#ea384c] hover:bg-[#d42d3f] text-white"
           >
             Mark as {person.status === 'found' ? 'Missing' : 'Found'}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="border-[#ea384c] text-[#ea384c]">
+              <Button variant="outline" className="w-full">
                 Delete Report
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>Delete Report</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the report.
+                  Are you sure you want to delete this report? This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -115,24 +103,14 @@ const PersonExpandedDetails = ({
         </div>
       )}
 
-      <div className="mt-8">
-        <h3 className="text-2xl font-bold mb-4">Can You <span className="text-[#ea384c]">HELP?</span></h3>
-        <Button
-          variant="outline"
-          className="w-full justify-start text-left border-[#ea384c] text-[#ea384c] hover:bg-[#ea384c] hover:text-white"
-          onClick={onToggleComments}
-        >
-          <MessageSquare className="h-4 w-4 mr-2" />
-          All Comments
-        </Button>
-      </div>
-
-      <div className="absolute top-4 right-4">
-        <Button variant="outline" className="bg-white hover:bg-gray-100">
-          <Camera className="h-4 w-4 mr-2" />
-          Add Photo
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        onClick={onToggleComments}
+        className="w-full flex items-center justify-center gap-2"
+      >
+        <MessageSquare className="h-4 w-4" />
+        View Comments
+      </Button>
     </div>
   );
 };
