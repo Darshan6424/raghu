@@ -29,7 +29,6 @@ const MissingPersonDetails = () => {
         if (error) throw error;
         setPerson(data);
 
-        // Fetch comments after person data is loaded
         const { data: commentsData, error: commentsError } = await supabase
           .from('missing_person_comments')
           .select(`
