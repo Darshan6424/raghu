@@ -69,6 +69,7 @@ export type Database = {
           longitude: number | null
           reporter_id: string | null
           verified: boolean | null
+          view_count: number | null
         }
         Insert: {
           created_at?: string
@@ -81,6 +82,7 @@ export type Database = {
           longitude?: number | null
           reporter_id?: string | null
           verified?: boolean | null
+          view_count?: number | null
         }
         Update: {
           created_at?: string
@@ -93,6 +95,7 @@ export type Database = {
           longitude?: number | null
           reporter_id?: string | null
           verified?: boolean | null
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -193,6 +196,7 @@ export type Database = {
           reporter_contact: string | null
           reporter_id: string | null
           status: string | null
+          view_count: number | null
         }
         Insert: {
           age?: number | null
@@ -208,6 +212,7 @@ export type Database = {
           reporter_contact?: string | null
           reporter_id?: string | null
           status?: string | null
+          view_count?: number | null
         }
         Update: {
           age?: number | null
@@ -223,6 +228,7 @@ export type Database = {
           reporter_contact?: string | null
           reporter_id?: string | null
           status?: string | null
+          view_count?: number | null
         }
         Relationships: []
       }
