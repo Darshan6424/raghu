@@ -10,6 +10,7 @@ import Comments from "@/components/missing-persons/Comments";
 const MissingPersonDetails = () => {
   const { id } = useParams();
   const [person, setPerson] = useState(null);
+  const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -27,11 +28,26 @@ const MissingPersonDetails = () => {
 
         if (error) throw error;
         setPerson(data);
+
+        // Fetch comments after person data is loaded
+        const { data: commentsData, error: commentsError } = await supabase
+          .from('missing_person_comments')
+          .select(`
+            *,
+            profiles (
+              username
+            )
+          `)
+          .eq('missing_person_id', id)
+          .order('created_at', { ascending: false });
+
+        if (commentsError) throw commentsError;
+        setComments(commentsData || []);
       } catch (error) {
-        console.error('Error fetching person details:', error);
+        console.error('Error fetching data:', error);
         toast({
           title: "Error",
-          description: "Failed to load person details",
+          description: "Failed to load data",
           variant: "destructive",
         });
       } finally {
@@ -66,6 +82,10 @@ const MissingPersonDetails = () => {
     }
   };
 
+  const handleCommentAdded = (newComment) => {
+    setComments(prev => [newComment, ...prev]);
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -76,7 +96,7 @@ const MissingPersonDetails = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] py-6 px-4">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <PersonExpandedDetails
             person={person}
@@ -90,10 +110,10 @@ const MissingPersonDetails = () => {
           {showComments && (
             <div className="mt-6 border-t pt-6">
               <Comments
-                comments={[]}
+                comments={comments}
                 personId={person.id}
                 session={session}
-                onCommentAdded={() => {}}
+                onCommentAdded={handleCommentAdded}
               />
             </div>
           )}
