@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Shield, Activity, Bell, Phone } from "lucide-react";
-import { LocationPicker } from "@/components/LocationPicker";
+import LocationPicker from "@/components/LocationPicker";
 import NewsSection from "@/components/NewsSection";
 
 const Index = () => {
