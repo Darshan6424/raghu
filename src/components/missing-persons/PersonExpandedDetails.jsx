@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { MapPin, MessageSquare, Trash2, Plus } from "lucide-react";
+import { MapPin, MessageSquare, Camera } from "lucide-react";
 import LocationPicker from "../LocationPicker";
 import {
   AlertDialog,
@@ -20,11 +20,11 @@ const PersonExpandedDetails = ({
   showMap, 
   onShowMapToggle, 
   onStatusUpdate, 
-  onDelete, 
+  onDelete,
   onToggleComments 
 }) => {
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4">
       <div className="text-xl font-semibold mb-4">{person.name}</div>
       
       <div className="grid grid-cols-2 gap-4">
@@ -96,7 +96,7 @@ const PersonExpandedDetails = ({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" className="border-[#ea384c] text-[#ea384c]">
-                <Trash2 className="h-4 w-4" />
+                Delete Report
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -129,7 +129,7 @@ const PersonExpandedDetails = ({
 
       <div className="absolute top-4 right-4">
         <Button variant="outline" className="bg-white hover:bg-gray-100">
-          <Plus className="h-4 w-4 mr-2" />
+          <Camera className="h-4 w-4 mr-2" />
           Add Photo
         </Button>
       </div>

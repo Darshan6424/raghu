@@ -37,7 +37,7 @@ const PersonCard = ({
         onToggleExpand={toggleExpand} 
       />
 
-      <div className="p-6">
+      <div className="p-4">
         {!isExpanded ? (
           <PersonBasicInfo 
             person={person} 

@@ -140,12 +140,17 @@ const MissingPersonsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#F6F6F7] py-8 px-4">
+      <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-[#ea384c]">Previous Missing Reports</h1>
+          <h1 className="text-2xl font-bold text-[#222222]">Missing Reports</h1>
           <div className="flex gap-4">
-            <Button onClick={() => navigate('/')}>Back to Home</Button>
+            <Button 
+              onClick={() => navigate('/')}
+              className="bg-[#ea384c] hover:bg-[#d42d3f] text-white"
+            >
+              Back to Home
+            </Button>
           </div>
         </div>
 

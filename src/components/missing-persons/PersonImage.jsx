@@ -13,11 +13,11 @@ const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
           className="w-full h-64 object-cover"
         />
       ) : (
-        <div className="w-full h-64 bg-gray-50 flex items-center justify-center">
-          <span className="text-gray-400">Photo (submitted before by users)</span>
+        <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+          <span className="text-gray-400">No photo available</span>
         </div>
       )}
-      <div className="absolute top-4 right-4 flex gap-2">
+      <div className="absolute top-4 right-4">
         <Badge variant={person.status === 'found' ? 'success' : 'destructive'}>
           {person.status === 'found' ? 'Found' : 'Missing'}
         </Badge>
@@ -26,18 +26,18 @@ const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
         <Button
           variant="outline"
           size="sm"
-          className="bg-white hover:bg-gray-100 text-[#ea384c] hover:text-[#ea384c]"
+          className="bg-white hover:bg-gray-100"
           onClick={onToggleExpand}
         >
           {isExpanded ? (
             <>
               <ChevronUp className="h-4 w-4 mr-1" />
-              See Less
+              Show Less
             </>
           ) : (
             <>
               <ChevronDown className="h-4 w-4 mr-1" />
-              See More
+              Show More
             </>
           )}
         </Button>
@@ -46,7 +46,7 @@ const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="font-semibold">{person.name}</span>
-            <span>-</span>
+            <span>•</span>
             <span>{person.age} years</span>
           </div>
         </div>
