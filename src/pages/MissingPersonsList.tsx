@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -5,44 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import PersonCard from "@/components/missing-persons/PersonCard";
-import { MapPin } from "lucide-react";
-import LocationPicker from "@/components/LocationPicker";
-
-interface Profile {
-  username: string | null;
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  image_url: string | null;
-  likes: number | null;
-  user_likes: string[] | null;
-  profiles: Profile;
-}
-
-interface MissingPerson {
-  id: string;
-  name: string;
-  last_seen_location: string;
-  age: number | null;
-  gender: string | null;
-  identifying_features: string | null;
-  image_url: string | null;
-  status: string;
-  reporter_contact: string | null;
-  reporter_id: string | null;
-  created_at: string;
-  latitude: number | null;
-  longitude: number | null;
-}
 
 const MissingPersonsList = () => {
-  const [missingPersons, setMissingPersons] = useState<MissingPerson[]>([]);
+  const [missingPersons, setMissingPersons] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [comments, setComments] = useState<Record<string, Comment[]>>({});
+  const [comments, setComments] = useState({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session } = useAuth();
@@ -80,13 +48,13 @@ const MissingPersonsList = () => {
           if (commentError) throw commentError;
           return { 
             personId: person.id, 
-            comments: commentData as unknown as Comment[] 
+            comments: commentData 
           };
         });
 
         if (commentsPromises) {
           const commentsResults = await Promise.all(commentsPromises);
-          const commentsMap: Record<string, Comment[]> = {};
+          const commentsMap = {};
           commentsResults.forEach(({ personId, comments }) => {
             commentsMap[personId] = comments;
           });
@@ -107,7 +75,7 @@ const MissingPersonsList = () => {
     fetchMissingPersons();
   }, [toast]);
 
-  const handleStatusUpdate = async (personId: string, newStatus: string) => {
+  const handleStatusUpdate = async (personId, newStatus) => {
     try {
       const { error } = await supabase
         .from('missing_persons')
@@ -136,7 +104,7 @@ const MissingPersonsList = () => {
     }
   };
 
-  const handleDelete = async (personId: string) => {
+  const handleDelete = async (personId) => {
     try {
       const { error } = await supabase
         .from('missing_persons')
@@ -160,7 +128,7 @@ const MissingPersonsList = () => {
     }
   };
 
-  const handleCommentAdded = (personId: string, newComment: Comment) => {
+  const handleCommentAdded = (personId, newComment) => {
     setComments(prev => ({
       ...prev,
       [personId]: [...(prev[personId] || []), newComment]
@@ -175,7 +143,7 @@ const MissingPersonsList = () => {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Missing Persons Reports</h1>
+          <h1 className="text-3xl font-bold text-[#ea384c]">Previous Missing Reports</h1>
           <div className="flex gap-4">
             <Button onClick={() => navigate('/')}>Back to Home</Button>
           </div>

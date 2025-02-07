@@ -5,16 +5,16 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
   return (
-    <div className="relative">
+    <div className="relative rounded-t-lg overflow-hidden">
       {person.image_url ? (
         <img
           src={person.image_url}
           alt={`${person.name}'s photo`}
-          className="w-full h-48 object-cover"
+          className="w-full h-64 object-cover"
         />
       ) : (
-        <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
-          <span className="text-gray-400">No image available</span>
+        <div className="w-full h-64 bg-gray-50 flex items-center justify-center">
+          <span className="text-gray-400">Photo (submitted before by users)</span>
         </div>
       )}
       <div className="absolute top-4 right-4 flex gap-2">
@@ -26,7 +26,7 @@ const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
         <Button
           variant="outline"
           size="sm"
-          className="bg-white hover:bg-gray-100"
+          className="bg-white hover:bg-gray-100 text-[#ea384c] hover:text-[#ea384c]"
           onClick={onToggleExpand}
         >
           {isExpanded ? (
@@ -41,6 +41,15 @@ const PersonImage = ({ person, isExpanded, onToggleExpand }) => {
             </>
           )}
         </Button>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 bg-[#ea384c] text-white p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">{person.name}</span>
+            <span>-</span>
+            <span>{person.age} years</span>
+          </div>
+        </div>
       </div>
     </div>
   );

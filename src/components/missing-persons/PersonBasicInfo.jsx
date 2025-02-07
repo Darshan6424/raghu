@@ -7,11 +7,6 @@ const PersonBasicInfo = ({ person, comments, showComments, onToggleComments }) =
     <>
       <div className="flex justify-between items-start mb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl font-semibold">{person.name}</h3>
-            <span className="text-gray-500">-</span>
-            <span className="text-gray-500">{person.age} years</span>
-          </div>
           <p className="text-gray-600 text-sm">Last seen: {person.last_seen_location}</p>
         </div>
       </div>
@@ -21,11 +16,11 @@ const PersonBasicInfo = ({ person, comments, showComments, onToggleComments }) =
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-[#ea384c] hover:text-[#ea384c]"
             onClick={onToggleComments}
           >
             <MessageSquare className="h-4 w-4" />
-            <span>{comments.length}</span>
+            <span>{comments.length} Comments</span>
           </Button>
           {person.view_count !== undefined && (
             <div className="flex items-center gap-2 text-gray-500">
