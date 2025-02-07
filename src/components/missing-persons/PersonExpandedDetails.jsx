@@ -32,8 +32,9 @@ const PersonExpandedDetails = ({
 
       <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8">
         <div className="grid grid-cols-[300px,1fr] gap-8">
+          {/* Left column with photo and Mark as Found button */}
           <div className="space-y-4">
-            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2">
+            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2 h-[300px]">
               <div className="absolute top-2 left-2 z-10">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-[#ea384c] text-white flex items-center justify-center">
@@ -49,7 +50,7 @@ const PersonExpandedDetails = ({
                 </div>
               </div>
 
-              <div className="w-full aspect-square bg-white rounded-lg overflow-hidden">
+              <div className="w-full h-full bg-white rounded-lg overflow-hidden">
                 {person.image_url ? (
                   <img
                     src={person.image_url}
@@ -79,8 +80,9 @@ const PersonExpandedDetails = ({
             )}
           </div>
 
+          {/* Right column with details */}
           <div className="space-y-6">
-            <div className="space-y-6">
+            <div className="border-2 border-gray-200 rounded-lg p-6 space-y-6">
               <div>
                 <p className="text-gray-600 mb-1">Name</p>
                 <p className="text-xl font-semibold">{person.name}</p>
@@ -109,7 +111,11 @@ const PersonExpandedDetails = ({
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <p className="text-gray-600 mb-1">Last Seen at</p>
-                  <p className="text-gray-900">{person.last_seen_location}</p>
+                  <Input 
+                    value={person.last_seen_location}
+                    readOnly
+                    className="bg-gray-50"
+                  />
                 </div>
                 {person.latitude && person.longitude && (
                   <Button
@@ -123,57 +129,13 @@ const PersonExpandedDetails = ({
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-6 mt-6">
+            <div className="border-t border-gray-200 pt-6">
               <div className="space-y-4">
-                <h2 className="flex items-baseline gap-2">
-                  <span className="text-2xl">Can You</span>
-                  <span className="text-[#ea384c] text-3xl font-bold">HELP?</span>
-                </h2>
-
-                <Input
-                  placeholder="Comment Any clues"
-                  className="border-2 rounded-lg"
-                />
-
-                <div className="border-2 rounded-lg p-4 space-y-2">
-                  <p className="font-medium">Pinpoint Location:</p>
-                  <div className="relative h-[200px] bg-gray-100 rounded-lg">
-                    {showMap && person.latitude && person.longitude ? (
-                      <>
-                        <div className="absolute top-2 right-2 z-10">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="bg-white"
-                            onClick={() => {}}
-                          >
-                            <Maximize2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <LocationPicker
-                          initialLat={person.latitude}
-                          initialLng={person.longitude}
-                          onLocationSelected={() => {}}
-                          readOnly={true}
-                          markers={[
-                            {
-                              lat: person.latitude,
-                              lng: person.longitude,
-                              popup: `${person.name} was last seen here`
-                            }
-                          ]}
-                        />
-                      </>
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-gray-500 text-center">
-                        ---Space for Map---<br />
-                        *Keep map section as it is*
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 <div className="flex justify-between items-center">
+                  <h2 className="flex items-baseline gap-2">
+                    <span className="text-2xl">Can You</span>
+                    <span className="text-[#ea384c] text-3xl font-bold">HELP?</span>
+                  </h2>
                   <Button
                     variant="link"
                     className="text-[#ea384c] hover:text-[#ea384c]/80 p-0 h-auto font-semibold"
@@ -181,10 +143,55 @@ const PersonExpandedDetails = ({
                   >
                     All Comments
                   </Button>
+                </div>
+
+                <Input
+                  placeholder="Comment Any clues"
+                  className="border-2 rounded-lg"
+                />
+
+                <div className="grid grid-cols-[1fr,auto] gap-4">
+                  <div className="space-y-2">
+                    <p className="font-medium">Pinpoint Location:</p>
+                    <div className="relative h-[200px] bg-gray-100 rounded-lg">
+                      {showMap && person.latitude && person.longitude ? (
+                        <>
+                          <div className="absolute top-2 right-2 z-10">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="bg-white"
+                              onClick={() => {}}
+                            >
+                              <Maximize2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <LocationPicker
+                            initialLat={person.latitude}
+                            initialLng={person.longitude}
+                            onLocationSelected={() => {}}
+                            readOnly={true}
+                            markers={[
+                              {
+                                lat: person.latitude,
+                                lng: person.longitude,
+                                popup: `${person.name} was last seen here`
+                              }
+                            ]}
+                          />
+                        </>
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-gray-500 text-center">
+                          ---Space for Map---<br />
+                          *Keep map section as it is*
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   <Button
                     variant="outline"
-                    className="border-2 rounded-lg p-6 flex flex-col items-center gap-2"
+                    className="h-auto border-2 rounded-lg px-6 py-8 flex flex-col items-center gap-2 self-end"
                     onClick={() => {}}
                   >
                     <Plus className="h-6 w-6 text-[#ea384c]" />
