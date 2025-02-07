@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
+import Comments from "@/components/Comments";
+import { useAuth } from "@/components/AuthProvider";
 
 interface DamageReport {
   id: string;
@@ -15,6 +17,7 @@ interface DamageReport {
   verified: boolean;
   latitude: number | null;
   longitude: number | null;
+  comments?: any[];
 }
 
 const DamageReportsList = () => {
@@ -22,17 +25,48 @@ const DamageReportsList = () => {
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const [commentsMap, setCommentsMap] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     const fetchDamageReports = async () => {
       try {
-        const { data, error } = await supabase
+        const { data: reports, error } = await supabase
           .from('damage_reports')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setDamageReports(data || []);
+
+        // Fetch comments for each report
+        const comments = await Promise.all(
+          reports.map(async (report) => {
+            const { data: reportComments } = await supabase
+              .from('damage_report_comments')
+              .select(`
+                id,
+                content,
+                created_at,
+                user_id,
+                image_url,
+                likes,
+                user_likes,
+                profiles (
+                  username
+                )
+              `)
+              .eq('damage_report_id', report.id)
+              .order('created_at', { ascending: true });
+            return { reportId: report.id, comments: reportComments || [] };
+          })
+        );
+
+        const commentsObject: Record<string, any[]> = {};
+        comments.forEach(({ reportId, comments }) => {
+          commentsObject[reportId] = comments;
+        });
+        setCommentsMap(commentsObject);
+        setDamageReports(reports || []);
       } catch (error) {
         console.error('Error fetching damage reports:', error);
       } finally {
@@ -42,6 +76,13 @@ const DamageReportsList = () => {
 
     fetchDamageReports();
   }, []);
+
+  const handleCommentAdded = (reportId: string, newComment: any) => {
+    setCommentsMap(prev => ({
+      ...prev,
+      [reportId]: [...(prev[reportId] || []), newComment]
+    }));
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -102,7 +143,7 @@ const DamageReportsList = () => {
               )}
               <h3 className="text-xl font-semibold mb-2">{report.location}</h3>
               <p className="text-gray-600 mb-4">{report.description}</p>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-gray-400">
                   Reported: {new Date(report.created_at).toLocaleDateString()}
                 </p>
@@ -112,6 +153,13 @@ const DamageReportsList = () => {
                   </span>
                 )}
               </div>
+              <Comments
+                comments={commentsMap[report.id] || []}
+                itemId={report.id}
+                session={session}
+                onCommentAdded={handleCommentAdded}
+                tableName="damage_report_comments"
+              />
             </div>
           ))}
         </div>
