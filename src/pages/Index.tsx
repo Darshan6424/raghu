@@ -1,9 +1,15 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Shield, Activity, Bell, Phone } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
 import NewsSection from "@/components/NewsSection";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu"
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,7 +27,42 @@ const Index = () => {
           <Button variant="ghost" onClick={() => navigate("/during")}>During</Button>
           <Button variant="ghost" onClick={() => navigate("/after")}>After</Button>
           <Button variant="ghost" onClick={() => navigate("/resources")}>Resources</Button>
-          <Button variant="destructive">Emergency Kit</Button>
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="bg-destructive text-white hover:bg-destructive/90">
+                  Report
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="grid gap-3 p-4 w-[400px]">
+                    <div className="grid gap-1">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => navigate("/report-missing")}
+                      >
+                        Report Missing Person
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => navigate("/damage-report")}
+                      >
+                        Report Damage
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start" 
+                        onClick={() => navigate("/damage-reports-list")}
+                      >
+                        View All Reports
+                      </Button>
+                    </div>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
         </div>
       </nav>
 
