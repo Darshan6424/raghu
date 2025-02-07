@@ -133,12 +133,6 @@ const MissingPersonForm = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-4xl font-bold text-[#ea384c]">Report Missing Person</h2>
-          <Button 
-            onClick={() => navigate('/missing-persons-list')}
-            className="bg-white text-[#ea384c] border-2 border-[#ea384c] hover:bg-[#ea384c] hover:text-white transition-colors"
-          >
-            View All Reports
-          </Button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid md:grid-cols-[300px,1fr] gap-8">
