@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -110,73 +110,97 @@ const MissingPersonForm = () => {
   };
 
   return (
-    <section id="report-missing" className="min-h-screen py-20 px-4 bg-gray-50">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Report Missing Person</h2>
-          <Button onClick={() => navigate('/missing-persons-list')}>
-            View All Reports
-          </Button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            placeholder="Name"
-            value={missingPerson.name}
-            onChange={(e) => setMissingPerson({ ...missingPerson, name: e.target.value })}
-            required
-          />
-          <Input
-            placeholder="Last Seen Location"
-            value={missingPerson.lastSeen}
-            onChange={(e) => setMissingPerson({ ...missingPerson, lastSeen: e.target.value })}
-            required
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              placeholder="Age"
-              type="number"
-              value={missingPerson.age}
-              onChange={(e) => setMissingPerson({ ...missingPerson, age: e.target.value })}
-            />
-            <Input
-              placeholder="Gender"
-              value={missingPerson.gender}
-              onChange={(e) => setMissingPerson({ ...missingPerson, gender: e.target.value })}
-            />
+    <section id="report-missing" className="min-h-screen py-20 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl font-bold text-center mb-12 text-[#ea384c]">Report Missing Person</h2>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid md:grid-cols-[300px,1fr] gap-8">
+            {/* Image Upload Section */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center space-y-4 bg-white">
+              <div className="w-16 h-16 rounded-full border-2 border-[#ea384c] flex items-center justify-center">
+                <Plus className="w-8 h-8 text-[#ea384c]" />
+              </div>
+              <span className="text-gray-600">Add Photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setMissingPerson({ ...missingPerson, image: e.target.files?.[0] || null })}
+                className="hidden"
+                id="photo-upload"
+              />
+              <label
+                htmlFor="photo-upload"
+                className="cursor-pointer text-sm text-gray-500 hover:text-gray-700"
+              >
+                Click to upload
+              </label>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              <Input
+                placeholder="Name of the Lost Person"
+                value={missingPerson.name}
+                onChange={(e) => setMissingPerson({ ...missingPerson, name: e.target.value })}
+                required
+                className="border-2 rounded-lg py-3 px-4"
+              />
+              <Input
+                placeholder="Last Seen At"
+                value={missingPerson.lastSeen}
+                onChange={(e) => setMissingPerson({ ...missingPerson, lastSeen: e.target.value })}
+                required
+                className="border-2 rounded-lg py-3 px-4"
+              />
+              <div className="grid grid-cols-[1fr,1fr,2fr] gap-4">
+                <Input
+                  placeholder="Age"
+                  type="number"
+                  value={missingPerson.age}
+                  onChange={(e) => setMissingPerson({ ...missingPerson, age: e.target.value })}
+                  className="border-2 rounded-lg py-3 px-4"
+                />
+                <Input
+                  placeholder="Gender"
+                  value={missingPerson.gender}
+                  onChange={(e) => setMissingPerson({ ...missingPerson, gender: e.target.value })}
+                  className="border-2 rounded-lg py-3 px-4"
+                />
+                <Input
+                  placeholder="Phone Number (Yours)"
+                  value={missingPerson.contact}
+                  onChange={(e) => setMissingPerson({ ...missingPerson, contact: e.target.value })}
+                  required
+                  className="border-2 rounded-lg py-3 px-4"
+                />
+              </div>
+              <Textarea
+                placeholder="Identifying Features"
+                value={missingPerson.features}
+                onChange={(e) => setMissingPerson({ ...missingPerson, features: e.target.value })}
+                className="border-2 rounded-lg py-3 px-4 min-h-[100px]"
+              />
+            </div>
           </div>
-          <Textarea
-            placeholder="Identifying Features"
-            value={missingPerson.features}
-            onChange={(e) => setMissingPerson({ ...missingPerson, features: e.target.value })}
-          />
-          <Input
-            placeholder="Your Contact Information"
-            value={missingPerson.contact}
-            onChange={(e) => setMissingPerson({ ...missingPerson, contact: e.target.value })}
-            required
-          />
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Select Location on Map
-            </label>
+
+          {/* Map Section */}
+          <div className="border-2 rounded-lg p-4 bg-white">
             <LocationPicker
               onLocationSelected={handleLocationSelected}
               initialLat={missingPerson.latitude}
               initialLng={missingPerson.longitude}
             />
           </div>
-          <div className="flex items-center gap-4">
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setMissingPerson({ ...missingPerson, image: e.target.files?.[0] || null })}
-              className="flex-1"
-            />
-            <Upload className="text-gray-400" />
+
+          <div className="flex justify-center">
+            <Button 
+              type="submit" 
+              className="bg-[#ea384c] hover:bg-[#d42d3f] text-white px-8 py-3 rounded-lg"
+              disabled={loading}
+            >
+              Submit Report
+            </Button>
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            Submit Report
-          </Button>
         </form>
       </div>
     </section>
@@ -184,3 +208,4 @@ const MissingPersonForm = () => {
 };
 
 export default MissingPersonForm;
+
