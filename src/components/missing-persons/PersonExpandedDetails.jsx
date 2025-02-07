@@ -153,3 +153,4 @@ const PersonExpandedDetails = ({
 };
 
 export default PersonExpandedDetails;
+
