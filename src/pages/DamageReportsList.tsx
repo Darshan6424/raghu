@@ -4,63 +4,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
-import { useAuth } from "@/components/AuthProvider";
-import { DamageReport, Comment } from "@/types/damageReports";
-import DamageReportCard from "@/components/DamageReportCard";
-import DamageReportsMap from "@/components/DamageReportsMap";
+import LocationPicker from "@/components/LocationPicker";
+
+interface DamageReport {
+  id: string;
+  location: string;
+  description: string;
+  image_url: string | null;
+  created_at: string;
+  verified: boolean;
+  latitude: number | null;
+  longitude: number | null;
+}
 
 const DamageReportsList = () => {
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
-  const [comments, setComments] = useState<Record<string, Comment[]>>({});
-  const [showCommentsFor, setShowCommentsFor] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { session } = useAuth();
 
   useEffect(() => {
     const fetchDamageReports = async () => {
       try {
-        const { data: reports, error } = await supabase
+        const { data, error } = await supabase
           .from('damage_reports')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-
-        // Fetch comments for all damage reports
-        const commentsPromises = reports?.map(async (report) => {
-          const { data: commentData, error: commentError } = await supabase
-            .from('damage_report_comments')
-            .select(`
-              id,
-              content,
-              created_at,
-              user_id,
-              image_url,
-              likes,
-              user_likes,
-              profiles (
-                username
-              )
-            `)
-            .eq('damage_report_id', report.id)
-            .order('created_at', { ascending: true });
-
-          if (commentError) throw commentError;
-          return { reportId: report.id, comments: commentData || [] };
-        });
-
-        if (commentsPromises) {
-          const commentsResults = await Promise.all(commentsPromises);
-          const commentsMap: Record<string, Comment[]> = {};
-          commentsResults.forEach(({ reportId, comments }) => {
-            commentsMap[reportId] = comments;
-          });
-          setComments(commentsMap);
-        }
-
-        setDamageReports(reports || []);
+        setDamageReports(data || []);
       } catch (error) {
         console.error('Error fetching damage reports:', error);
       } finally {
@@ -71,16 +43,15 @@ const DamageReportsList = () => {
     fetchDamageReports();
   }, []);
 
-  const handleCommentAdded = (reportId: string, newComment: Comment) => {
-    setComments(prev => ({
-      ...prev,
-      [reportId]: [...(prev[reportId] || []), newComment]
-    }));
-  };
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
+  // Find center point for reports with coordinates
+  const reportsWithCoordinates = damageReports.filter(report => report.latitude && report.longitude);
+  const initialCoordinates = reportsWithCoordinates.length > 0 
+    ? { lat: reportsWithCoordinates[0].latitude!, lng: reportsWithCoordinates[0].longitude! }
+    : { lat: 28.3949, lng: 84.1240 }; // Nepal's center coordinates
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -100,19 +71,48 @@ const DamageReportsList = () => {
           </div>
         </div>
 
-        {showMap && <DamageReportsMap reports={damageReports} />}
+        {showMap && reportsWithCoordinates.length > 0 && (
+          <div className="mb-8">
+            <LocationPicker
+              initialLat={initialCoordinates.lat}
+              initialLng={initialCoordinates.lng}
+              onLocationSelected={() => {}}
+              markers={reportsWithCoordinates.map(report => ({
+                lat: report.latitude!,
+                lng: report.longitude!,
+                popup: `
+                  <strong>${report.location}</strong><br/>
+                  ${report.description}<br/>
+                  ${new Date(report.created_at).toLocaleDateString()}
+                `
+              }))}
+            />
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {damageReports.map((report) => (
-            <DamageReportCard
-              key={report.id}
-              report={report}
-              comments={comments[report.id] || []}
-              showCommentsFor={showCommentsFor}
-              session={session}
-              onCommentAdded={handleCommentAdded}
-              onToggleComments={setShowCommentsFor}
-            />
+            <div key={report.id} className="bg-white rounded-lg shadow-sm p-6">
+              {report.image_url && (
+                <img
+                  src={report.image_url}
+                  alt={`Damage at ${report.location}`}
+                  className="w-full h-48 object-cover rounded-md mb-4"
+                />
+              )}
+              <h3 className="text-xl font-semibold mb-2">{report.location}</h3>
+              <p className="text-gray-600 mb-4">{report.description}</p>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-gray-400">
+                  Reported: {new Date(report.created_at).toLocaleDateString()}
+                </p>
+                {report.verified && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-sm rounded">
+                    Verified
+                  </span>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       </div>

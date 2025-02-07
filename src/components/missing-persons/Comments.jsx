@@ -4,9 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import LocationPicker from "../LocationPicker";
 
-const Comments = ({ comments = [], personId, session, onCommentAdded }) => {
+const Comments = ({ comments, personId, session, onCommentAdded }) => {
   const [newComment, setNewComment] = useState("");
   const { toast } = useToast();
 
@@ -37,6 +36,8 @@ const Comments = ({ comments = [], personId, session, onCommentAdded }) => {
           created_at,
           user_id,
           image_url,
+          likes,
+          user_likes,
           profiles (
             username
           )
@@ -45,7 +46,7 @@ const Comments = ({ comments = [], personId, session, onCommentAdded }) => {
 
       if (error) throw error;
 
-      onCommentAdded(data);
+      onCommentAdded(personId, data);
       setNewComment('');
 
       toast({
@@ -63,72 +64,35 @@ const Comments = ({ comments = [], personId, session, onCommentAdded }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Previous Comments:</h2>
-      
-      <div className="space-y-6">
-        {comments.map((comment, index) => (
-          <div key={comment.id} className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-[#ea384c] rounded-full flex items-center justify-center text-white">
-                {index + 1}
-              </div>
-              <div className="flex-1">
-                <Input 
-                  value={comment.content}
-                  readOnly
-                  className="w-full bg-gray-50"
-                />
-              </div>
-              {comment.image_url && (
-                <div className="w-32 h-32 rounded-lg overflow-hidden">
-                  <img 
-                    src={comment.image_url} 
-                    alt="Comment attachment" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-            </div>
-            
-            {comment.latitude && comment.longitude && (
-              <div className="relative h-[200px] rounded-lg overflow-hidden">
-                <LocationPicker
-                  initialLat={comment.latitude}
-                  initialLng={comment.longitude}
-                  readOnly={true}
-                  onLocationSelected={() => {}}
-                  markers={[
-                    {
-                      lat: comment.latitude,
-                      lng: comment.longitude,
-                      popup: "Location specified in comment"
-                    }
-                  ]}
-                />
-              </div>
-            )}
+    <div className="mt-4 border-t pt-4">
+      <h4 className="font-semibold mb-2">Comments</h4>
+      <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
+        {comments?.map((comment) => (
+          <div key={comment.id} className="bg-gray-50 p-2 rounded">
+            <p className="text-sm">{comment.content}</p>
+            <p className="text-xs text-gray-500">
+              By {comment.profiles?.username || 'Anonymous'} • 
+              {new Date(comment.created_at).toLocaleDateString()}
+            </p>
           </div>
         ))}
       </div>
-
       {session?.user ? (
-        <div className="space-y-4">
+        <div className="flex gap-2">
           <Input
-            placeholder="Comment Any clues"
+            placeholder="Add a comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            className="w-full"
           />
           <Button
+            size="sm"
             onClick={handleCommentSubmit}
-            className="w-full bg-[#ea384c] hover:bg-[#ea384c]/90 text-white"
           >
-            Submit Comment
+            Post
           </Button>
         </div>
       ) : (
-        <p className="text-gray-500">Please log in to comment</p>
+        <p className="text-sm text-gray-500">Please log in to comment</p>
       )}
     </div>
   );
