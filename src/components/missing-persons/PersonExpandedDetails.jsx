@@ -1,19 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { MapPin, Plus, Maximize2 } from "lucide-react";
+import { MapPin, Plus, Maximize2, ArrowLeft } from "lucide-react";
 import LocationPicker from "../LocationPicker";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 const PersonExpandedDetails = ({ 
   person, 
@@ -24,8 +14,22 @@ const PersonExpandedDetails = ({
   onDelete,
   onToggleComments,
 }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex-1 space-y-6">
+    <div className="flex-1 space-y-6 bg-white p-6 rounded-lg shadow-lg">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#ea384c]">Previous Missing Reports</h1>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => navigate('/missing-persons-list')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Go Back
+        </Button>
+      </div>
+
       <div className="space-y-4">
         <div className="p-4 border-2 rounded-lg">
           <h2 className="text-2xl font-semibold mb-2">{person.name}</h2>
@@ -46,7 +50,7 @@ const PersonExpandedDetails = ({
                 <p className="text-gray-900">{person.gender}</p>
               </div>
               <div>
-                <p className="text-gray-600 mb-1">Contacts of the person who reported</p>
+                <p className="text-gray-600 mb-1">Reporter Contact</p>
                 <p className="text-gray-900">{person.reporter_contact}</p>
               </div>
             </div>
@@ -153,4 +157,3 @@ const PersonExpandedDetails = ({
 };
 
 export default PersonExpandedDetails;
-
