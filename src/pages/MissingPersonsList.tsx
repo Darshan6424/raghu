@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -140,25 +139,16 @@ const MissingPersonsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F6F7] py-8 px-4">
+    <div className="min-h-screen bg-white py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-[#222222]">Missing Reports</h1>
-          <div className="flex gap-4">
-            <Button 
-              onClick={() => navigate('/')}
-              className="bg-[#ea384c] hover:bg-[#d42d3f] text-white"
-            >
-              Back to Home
-            </Button>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold text-[#ea384c] text-center mb-12">Previous Missing Reports</h1>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {missingPersons.map((person) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {missingPersons.map((person, index) => (
             <PersonCard
               key={person.id}
               person={person}
+              index={index + 1}
               comments={comments[person.id] || []}
               session={session}
               onStatusUpdate={handleStatusUpdate}

@@ -7,6 +7,7 @@ import PersonExpandedDetails from "./PersonExpandedDetails";
 
 const PersonCard = ({ 
   person, 
+  index,
   comments = [], 
   session, 
   onStatusUpdate, 
@@ -30,42 +31,39 @@ const PersonCard = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300">
-      <PersonImage 
-        person={person} 
-        isExpanded={isExpanded} 
-        onToggleExpand={toggleExpand} 
-      />
+    <div className="relative">
+      <div className="absolute -top-4 -left-4 w-10 h-10 bg-[#ea384c] rounded-full flex items-center justify-center text-white font-bold z-10">
+        {index}
+      </div>
+      <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <PersonImage 
+          person={person} 
+          isExpanded={isExpanded} 
+          onToggleExpand={toggleExpand} 
+        />
 
-      <div className="p-4">
-        {!isExpanded ? (
-          <PersonBasicInfo 
-            person={person} 
-            comments={comments}
-            showComments={showComments}
-            onToggleComments={() => setShowComments(!showComments)}
-          />
-        ) : (
-          <PersonExpandedDetails 
-            person={person}
-            isOwner={isOwner}
-            showMap={showMap}
-            onShowMapToggle={() => setShowMap(!showMap)}
-            onStatusUpdate={onStatusUpdate}
-            onDelete={handleDelete}
-            onToggleComments={() => setShowComments(!showComments)}
-          />
-        )}
-
-        {showComments && (
-          <div className="mt-4 animate-fade-in">
-            <Comments 
-              comments={comments} 
-              itemId={person.id}
-              session={session}
-              onCommentAdded={onCommentAdded}
-              tableName="missing_person_comments"
+        {isExpanded && (
+          <div className="p-4">
+            <PersonExpandedDetails 
+              person={person}
+              isOwner={isOwner}
+              showMap={showMap}
+              onShowMapToggle={() => setShowMap(!showMap)}
+              onStatusUpdate={onStatusUpdate}
+              onDelete={handleDelete}
+              onToggleComments={() => setShowComments(!showComments)}
             />
+
+            {showComments && (
+              <div className="mt-4">
+                <Comments 
+                  comments={comments} 
+                  personId={person.id}
+                  session={session}
+                  onCommentAdded={onCommentAdded}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
