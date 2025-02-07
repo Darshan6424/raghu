@@ -33,7 +33,7 @@ interface Comment {
   user_likes: string[] | null;
   profiles: {
     username: string | null;
-  };
+  } | null;
 }
 
 const DamageReportsList = () => {
@@ -75,7 +75,7 @@ const DamageReportsList = () => {
             .order('created_at', { ascending: true });
 
           if (commentError) throw commentError;
-          return { reportId: report.id, comments: commentData };
+          return { reportId: report.id, comments: commentData || [] };
         });
 
         if (commentsPromises) {
@@ -170,7 +170,7 @@ const DamageReportsList = () => {
                 )}
                 <div className="absolute top-4 right-4 flex gap-2">
                   {report.verified && (
-                    <Badge variant="success">Verified</Badge>
+                    <Badge variant="secondary">Verified</Badge>
                   )}
                   {report.has_casualties && (
                     <Badge variant="destructive">Casualties Reported</Badge>

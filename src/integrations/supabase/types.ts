@@ -55,6 +55,13 @@ export type Database = {
             referencedRelation: "damage_reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_damage_report_comments_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       damage_reports: {
