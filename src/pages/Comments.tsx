@@ -8,12 +8,28 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import LocationPicker from "@/components/LocationPicker";
 
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_name: string | null;
+  likes: number;
+  user_id: string;
+  user_likes: string[];
+  profiles: {
+    username: string | null;
+  } | null;
+}
+
 const Comments = () => {
   const [selectedMapComment, setSelectedMapComment] = useState<number | null>(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: comments = [], isLoading } = useQuery({
+  const { data: comments = [], isLoading } = useQuery<Comment[]>({
     queryKey: ['missingPersonComments', id],
     queryFn: async () => {
       if (!id) throw new Error('Missing person ID is required');
@@ -154,3 +170,4 @@ const Comments = () => {
 };
 
 export default Comments;
+
