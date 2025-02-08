@@ -67,8 +67,40 @@ const DetailedReport = () => {
     setCommentImage(null);
   };
 
-  const handleSubmitComment = () => {
-    console.log("Comment submitted with location:", commentLocation);
+  const handleSubmitComment = async () => {
+    if (!id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('missing_person_comments')
+        .insert([{
+          missing_person_id: id,
+          content: "New comment",
+          latitude: commentLocation.lat,
+          longitude: commentLocation.lng,
+          image_url: commentImage
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Comment added successfully",
+      });
+
+      // Reset form
+      setCommentImage(null);
+      setCommentLocation({ lat: 28.3949, lng: 84.1240 });
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoadingPerson) {
@@ -120,19 +152,43 @@ const DetailedReport = () => {
         </div>
 
         {showComments && (
-          <Comments
-            comments={comments}
-            itemId={id || ''}
-            tableName="missing_person_comments"
-            session={null}
-            onCommentAdded={(itemId, comment) => {
-              console.log('Comment added:', comment);
-              toast({
-                title: "Success",
-                description: "Comment added successfully",
-              });
-            }}
-          />
+          <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-6 text-[#ea384c]">Previous Comments</h2>
+            <div className="space-y-6">
+              {comments.map((comment) => (
+                <div key={comment.id} className="border-b pb-6 last:border-0">
+                  <div className="grid md:grid-cols-[1fr,300px] gap-6">
+                    <div>
+                      <p className="text-gray-700 mb-4">{comment.content}</p>
+                      {(comment.latitude && comment.longitude) && (
+                        <div className="h-[200px] rounded-lg overflow-hidden">
+                          <LocationPicker
+                            onLocationSelected={() => {}}
+                            initialLat={Number(comment.latitude)}
+                            initialLng={Number(comment.longitude)}
+                            readOnly={true}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {comment.image_url && (
+                      <div className="h-[200px] rounded-lg overflow-hidden">
+                        <img 
+                          src={comment.image_url}
+                          alt="Comment attachment"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+                    <span>{comment.profiles?.username || 'Anonymous'}</span>
+                    <span>{new Date(comment.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border-2 border-gray-200">
