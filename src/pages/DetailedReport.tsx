@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { MessageSquare, Maximize2, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -15,6 +14,7 @@ import { useAuth } from "@/components/AuthProvider";
 
 const DetailedReport = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [showMap, setShowMap] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentLocation, setCommentLocation] = useState({ lat: 28.3949, lng: 84.1240 });
@@ -145,11 +145,11 @@ const DetailedReport = () => {
 
               <div className="mt-4">
                 <Button
-                  onClick={() => setShowComments(!showComments)}
+                  onClick={() => navigate(`/comments/${id}`)}
                   className="w-full bg-[#ea384c] hover:bg-[#ea384c]/90 text-white flex items-center justify-center gap-2"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  {showComments ? 'Hide Comments' : 'Show Comments'}
+                  Show Comments
                 </Button>
               </div>
             </div>
@@ -282,4 +282,3 @@ const DetailedReport = () => {
 };
 
 export default DetailedReport;
-

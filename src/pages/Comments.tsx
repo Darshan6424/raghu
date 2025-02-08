@@ -1,8 +1,9 @@
 
 import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { MessageSquare, Maximize2, MapPin, User } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { MessageSquare, Maximize2, MapPin, User, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import LocationPicker from "@/components/LocationPicker";
@@ -10,6 +11,7 @@ import LocationPicker from "@/components/LocationPicker";
 const Comments = () => {
   const [selectedMapComment, setSelectedMapComment] = useState<number | null>(null);
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['missingPersonComments', id],
@@ -39,6 +41,17 @@ const Comments = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
+        <div className="mb-6">
+          <Button
+            onClick={() => navigate(`/detailed-report/${id}`)}
+            variant="ghost"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Report
+          </Button>
+        </div>
+
         <h2 className="text-2xl font-bold mb-6 text-center">Previous Comments:</h2>
         
         <div className="space-y-8">
