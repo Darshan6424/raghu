@@ -115,7 +115,7 @@ const MissingPersonForm = () => {
         description: "Missing person report submitted successfully",
       });
       
-      navigate('/missing-persons-list');
+      navigate('/previous-detail-report');
     } catch (error) {
       console.error('Error submitting missing person report:', error);
       toast({
@@ -173,7 +173,7 @@ const MissingPersonForm = () => {
             </Button>
             <Button 
               type="button"
-              onClick={() => navigate('/missing-persons-list')}
+              onClick={() => navigate('/previous-detail-report')}
               className="bg-white text-[#ea384c] border-2 border-[#ea384c] hover:bg-[#ea384c] hover:text-white px-8 py-3 rounded-lg"
             >
               View All Reports
@@ -186,3 +186,4 @@ const MissingPersonForm = () => {
 };
 
 export default MissingPersonForm;
+
