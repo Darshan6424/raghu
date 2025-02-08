@@ -71,7 +71,7 @@ const HeroSection = () => {
       )}
 
       <div className="h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-b from-primary/10 to-background dark:from-primary/5 dark:to-background">
-        <h1 className="text-6xl md:text-8xl font-bold mb-8 text-primary">Raghu</h1>
+        <h1 className="text-6xl md:text-8xl font-bold mb-8 text-primary">E.R.H.</h1>
         <p className="text-xl text-gray-600 dark:text-gray-400 mb-12 text-center max-w-2xl">
           Emergency Response & Support System
         </p>
