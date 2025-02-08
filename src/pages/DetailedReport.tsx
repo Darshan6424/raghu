@@ -12,6 +12,7 @@ import Comments from "@/components/Comments";
 import DetailedReportHeader from "@/components/missing-person/DetailedReportHeader";
 import PersonInfoDisplay from "@/components/missing-person/PersonInfoDisplay";
 import CommentForm from "@/components/missing-person/CommentForm";
+import { useAuth } from "@/components/AuthProvider";
 
 const DetailedReport = () => {
   const { id } = useParams();
@@ -20,6 +21,7 @@ const DetailedReport = () => {
   const [commentLocation, setCommentLocation] = useState({ lat: 28.3949, lng: 84.1240 });
   const [commentImage, setCommentImage] = useState<string | null>(null);
   const { toast } = useToast();
+  const { session } = useAuth();
 
   const { data: missingPerson, isLoading: isLoadingPerson } = useQuery({
     queryKey: ['missingPerson', id],
@@ -68,7 +70,14 @@ const DetailedReport = () => {
   };
 
   const handleSubmitComment = async (content: string) => {
-    if (!id || !content.trim()) return;
+    if (!id || !content.trim() || !session?.user?.id) {
+      toast({
+        title: "Error",
+        description: "Please login to comment",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -78,7 +87,8 @@ const DetailedReport = () => {
           content: content,
           latitude: commentLocation.lat,
           longitude: commentLocation.lng,
-          image_url: commentImage
+          image_url: commentImage,
+          user_id: session.user.id
         }])
         .select()
         .single();
