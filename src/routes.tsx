@@ -1,6 +1,6 @@
 
 import { Routes, Route } from "react-router-dom";
-import MainPage from "./pages/MainPage";
+import Main from "./pages/MainPage";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -12,7 +12,7 @@ import Comments from "./pages/Comments";
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/main" element={<MainPage />} />
+      <Route path="/main" element={<Main />} />
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/damage-reports-list" element={<DamageReportsList />} />

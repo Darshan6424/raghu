@@ -9,7 +9,7 @@ interface NewsItem {
   summary: string;
 }
 
-const MainPage = () => {
+const Main = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const newsItems: NewsItem[] = [
@@ -137,4 +137,4 @@ const MainPage = () => {
   );
 };
 
-export default MainPage;
+export default Main;
