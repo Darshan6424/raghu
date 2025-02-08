@@ -7,11 +7,33 @@ import { Textarea } from "@/components/ui/textarea";
 import LocationPicker from "@/components/LocationPicker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MapPin, Plus } from "lucide-react";
+import ImageUploadSection from "@/components/missing-person/ImageUploadSection";
 
 const DetailedReport = () => {
   const navigate = useNavigate();
   const [showMap, setShowMap] = useState(false);
   const [commentLocation, setCommentLocation] = useState({ lat: 28.3949, lng: 84.1240 });
+  const [commentImage, setCommentImage] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCommentImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageRemove = () => {
+    setCommentImage(null);
+  };
+
+  const handleSubmitComment = () => {
+    // Handle comment submission here
+    console.log("Comment submitted with location:", commentLocation);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -61,22 +83,47 @@ const DetailedReport = () => {
                   View Location
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
 
-              <div className="border-t border-gray-200 my-6 py-6">
-                <h2 className="text-2xl font-bold mb-4 text-[#ea384c]">Can You HELP?</h2>
-                <Textarea placeholder="Comment Any clues" className="w-full mb-4" />
-                
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Pinpoint Location:</label>
-                  <div className="h-[200px] bg-gray-100 rounded-lg">
-                    <LocationPicker
-                      onLocationSelected={(lat, lng) => setCommentLocation({ lat, lng })}
-                      initialLat={commentLocation.lat}
-                      initialLng={commentLocation.lng}
-                    />
-                  </div>
+        <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border-2 border-gray-200">
+          <h2 className="text-2xl font-bold mb-6 text-[#ea384c]">Can You HELP?</h2>
+          
+          <div className="space-y-6">
+            <Textarea 
+              placeholder="Comment Any clues" 
+              className="w-full min-h-[120px]" 
+            />
+
+            <div className="grid md:grid-cols-[300px,1fr] gap-6">
+              <div>
+                <ImageUploadSection
+                  imagePreview={commentImage}
+                  onImageChange={handleImageChange}
+                  onImageRemove={handleImageRemove}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">Pinpoint Location:</label>
+                <div className="h-[300px] w-full">
+                  <LocationPicker
+                    onLocationSelected={(lat, lng) => setCommentLocation({ lat, lng })}
+                    initialLat={commentLocation.lat}
+                    initialLng={commentLocation.lng}
+                  />
                 </div>
               </div>
+            </div>
+
+            <div className="flex justify-end mt-4">
+              <Button
+                onClick={handleSubmitComment}
+                className="bg-[#ea384c] hover:bg-[#ea384c]/90 text-white px-8"
+              >
+                Submit Comment
+              </Button>
             </div>
           </div>
         </div>
