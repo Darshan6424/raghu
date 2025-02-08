@@ -76,7 +76,7 @@ const PreviousDetailReport = () => {
                 <Button
                   variant="link"
                   className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline mt-2"
-                  onClick={() => navigate(`/missing-persons/${person.id}`)}
+                  onClick={() => navigate(`/detailed-report/${person.id}`)}
                 >
                   See More
                 </Button>
