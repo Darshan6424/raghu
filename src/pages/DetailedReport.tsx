@@ -1,14 +1,13 @@
 
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Maximize2, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import LocationPicker from "@/components/LocationPicker";
-import Comments from "@/components/Comments";
 import DetailedReportHeader from "@/components/missing-person/DetailedReportHeader";
 import PersonInfoDisplay from "@/components/missing-person/PersonInfoDisplay";
 import CommentForm from "@/components/missing-person/CommentForm";
@@ -20,6 +19,7 @@ const DetailedReport = () => {
   const [showComments, setShowComments] = useState(false);
   const [commentLocation, setCommentLocation] = useState({ lat: 28.3949, lng: 84.1240 });
   const [commentImage, setCommentImage] = useState<string | null>(null);
+  const [selectedMapComment, setSelectedMapComment] = useState<number | null>(null);
   const { toast } = useToast();
   const { session } = useAuth();
 
@@ -164,23 +164,46 @@ const DetailedReport = () => {
         {showComments && (
           <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-6 text-[#ea384c]">Previous Comments</h2>
-            <div className="space-y-6">
-              {comments.map((comment) => (
-                <div key={comment.id} className="border-b pb-6 last:border-0">
-                  <div className="grid md:grid-cols-[1fr,300px] gap-6">
-                    <div>
-                      <p className="text-gray-700 mb-4">{comment.content}</p>
+            <div className="space-y-8">
+              {comments.map((comment, index) => (
+                <div key={comment.id} className="relative border-b pb-8 last:border-0">
+                  <div className="absolute -left-4 -top-4 w-8 h-8 bg-[#ea384c] text-white rounded-full flex items-center justify-center font-bold">
+                    {index + 1}
+                  </div>
+                  
+                  <div className="grid md:grid-cols-[1fr,300px] gap-6 mt-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <User className="h-4 w-4" />
+                        <span>{comment.profiles?.username || 'Anonymous'}</span>
+                        <span>•</span>
+                        <span>{new Date(comment.created_at).toLocaleString()}</span>
+                      </div>
+                      
+                      <p className="text-gray-700">{comment.content}</p>
+                      
                       {(comment.latitude && comment.longitude) && (
-                        <div className="h-[200px] rounded-lg overflow-hidden">
-                          <LocationPicker
-                            onLocationSelected={() => {}}
-                            initialLat={Number(comment.latitude)}
-                            initialLng={Number(comment.longitude)}
-                            readOnly={true}
-                          />
+                        <div className="relative">
+                          <div className="h-[200px] rounded-lg overflow-hidden">
+                            <LocationPicker
+                              onLocationSelected={() => {}}
+                              initialLat={Number(comment.latitude)}
+                              initialLng={Number(comment.longitude)}
+                              readOnly={true}
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedMapComment(index)}
+                            className="absolute top-2 right-2 bg-white"
+                          >
+                            <Maximize2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       )}
                     </div>
+                    
                     {comment.image_url && (
                       <div className="h-[200px] rounded-lg overflow-hidden">
                         <img 
@@ -190,10 +213,6 @@ const DetailedReport = () => {
                         />
                       </div>
                     )}
-                  </div>
-                  <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
-                    <span>{comment.profiles?.username || 'Anonymous'}</span>
-                    <span>{new Date(comment.created_at).toLocaleString()}</span>
                   </div>
                 </div>
               ))}
@@ -235,9 +254,32 @@ const DetailedReport = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={selectedMapComment !== null} onOpenChange={() => setSelectedMapComment(null)}>
+          <DialogContent className="max-w-4xl">
+            <div className="h-[600px]">
+              {selectedMapComment !== null && comments[selectedMapComment] && (
+                <LocationPicker
+                  onLocationSelected={() => {}}
+                  initialLat={Number(comments[selectedMapComment].latitude)}
+                  initialLng={Number(comments[selectedMapComment].longitude)}
+                  readOnly={true}
+                  markers={[
+                    {
+                      lat: Number(comments[selectedMapComment].latitude),
+                      lng: Number(comments[selectedMapComment].longitude),
+                      popup: comments[selectedMapComment].content
+                    }
+                  ]}
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
 };
 
 export default DetailedReport;
+
