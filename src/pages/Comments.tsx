@@ -87,7 +87,7 @@ const Comments = () => {
                               {
                                 lat: Number(comment.latitude),
                                 lng: Number(comment.longitude),
-                                popup: comment.content
+                                popup: `<strong>Location:</strong> ${comment.location_name || 'Unknown location'}<br/><strong>Comment:</strong> ${comment.content}`
                               }
                             ]}
                           />
@@ -140,7 +140,7 @@ const Comments = () => {
                     {
                       lat: Number(comments[selectedMapComment].latitude),
                       lng: Number(comments[selectedMapComment].longitude),
-                      popup: comments[selectedMapComment].content
+                      popup: `<strong>Location:</strong> ${comments[selectedMapComment].location_name || 'Unknown location'}<br/><strong>Comment:</strong> ${comments[selectedMapComment].content}`
                     }
                   ]}
                 />
