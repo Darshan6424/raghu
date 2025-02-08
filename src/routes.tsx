@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import Index from "./pages/Index";
