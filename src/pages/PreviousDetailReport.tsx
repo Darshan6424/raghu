@@ -68,20 +68,21 @@ const PreviousDetailReport = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {missingPersons.map((person, index) => (
-            <div key={person.id} className="relative">
-              <div className="absolute -left-4 -top-4 w-10 h-10 bg-[#ea384c] rounded-full flex items-center justify-center text-white font-bold z-10">
-                {index + 1}
-              </div>
-              
-              <div className="relative flex flex-col">
+            <div key={person.id} className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="w-10 h-10 bg-[#ea384c] rounded-full flex items-center justify-center text-white font-bold">
+                  {index + 1}
+                </div>
                 <Button
                   variant="link"
-                  className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline self-start mb-2"
+                  className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline mt-2"
                   onClick={() => navigate(`/missing-persons/${person.id}`)}
                 >
                   See More
                 </Button>
-
+              </div>
+              
+              <div className="flex-1">
                 <div className="bg-white rounded-lg overflow-hidden shadow-md">
                   <div className="aspect-square bg-gray-100">
                     {person.image_url ? (
