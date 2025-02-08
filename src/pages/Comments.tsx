@@ -57,35 +57,41 @@ const Comments = () => {
 
         <h2 className="text-2xl font-bold mb-6 text-center">Previous Comments:</h2>
         
-        <div className="space-y-8">
+        <div className="space-y-12">
           {comments.map((comment, index) => (
-            <div key={comment.id} className="relative border-b pb-8 last:border-0">
-              <div className="absolute -left-4 -top-4 w-8 h-8 bg-[#ea384c] text-white rounded-full flex items-center justify-center font-bold">
+            <div key={comment.id} className="relative pl-12 border-b pb-8 last:border-0">
+              <div className="absolute -left-2 top-0 w-8 h-8 bg-[#ea384c] text-white rounded-full flex items-center justify-center font-bold">
                 {index + 1}
               </div>
               
-              <div className="grid md:grid-cols-[1fr,300px] gap-6 mt-4">
+              <div className="grid md:grid-cols-[1fr,300px] gap-6">
                 <div className="space-y-4">
-                  <p className="text-gray-700 bg-white p-4 rounded-lg shadow-sm">
-                    {comment.content}
-                  </p>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Comment Information</h4>
+                    <p className="text-gray-700 bg-white p-4 rounded-lg shadow-sm">
+                      {comment.content}
+                    </p>
+                  </div>
                   
                   {(comment.latitude && comment.longitude) && (
-                    <div className="relative">
-                      <div className="h-[200px] rounded-lg overflow-hidden">
-                        <LocationPicker
-                          onLocationSelected={() => {}}
-                          initialLat={Number(comment.latitude)}
-                          initialLng={Number(comment.longitude)}
-                          readOnly={true}
-                        />
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">Location Details</h4>
+                      <div className="relative">
+                        <div className="h-[200px] rounded-lg overflow-hidden">
+                          <LocationPicker
+                            onLocationSelected={() => {}}
+                            initialLat={Number(comment.latitude)}
+                            initialLng={Number(comment.longitude)}
+                            readOnly={true}
+                          />
+                        </div>
+                        <button
+                          onClick={() => setSelectedMapComment(index)}
+                          className="absolute top-2 right-2 p-1 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors"
+                        >
+                          <Maximize2 className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => setSelectedMapComment(index)}
-                        className="absolute top-2 right-2 p-1 bg-white rounded-md shadow-sm hover:bg-gray-50 transition-colors"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                      </button>
                     </div>
                   )}
                   
@@ -98,12 +104,15 @@ const Comments = () => {
                 </div>
                 
                 {comment.image_url && (
-                  <div className="h-[200px] rounded-lg overflow-hidden bg-white shadow-sm">
-                    <img 
-                      src={comment.image_url}
-                      alt="Comment attachment"
-                      className="w-full h-full object-cover"
-                    />
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Attached Image</h4>
+                    <div className="h-[200px] rounded-lg overflow-hidden bg-white shadow-sm">
+                      <img 
+                        src={comment.image_url}
+                        alt="Comment attachment"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
