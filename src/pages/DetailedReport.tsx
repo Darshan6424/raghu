@@ -6,19 +6,23 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import LocationPicker from "@/components/LocationPicker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { MapPin } from "lucide-react";
+import { MapPin, MessageSquare } from "lucide-react";
 import ImageUploadSection from "@/components/missing-person/ImageUploadSection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import Comments from "@/components/Comments";
+import { useToast } from "@/hooks/use-toast";
 
 const DetailedReport = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [showMap, setShowMap] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const [commentLocation, setCommentLocation] = useState({ lat: 28.3949, lng: 84.1240 });
   const [commentImage, setCommentImage] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const { data: missingPerson, isLoading } = useQuery({
+  const { data: missingPerson, isLoading: isLoadingPerson } = useQuery({
     queryKey: ['missingPerson', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -29,6 +33,23 @@ const DetailedReport = () => {
 
       if (error) throw error;
       return data;
+    }
+  });
+
+  const { data: comments = [], isLoading: isLoadingComments } = useQuery({
+    queryKey: ['missingPersonComments', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('missing_person_comments')
+        .select(`
+          *,
+          profiles (username)
+        `)
+        .eq('missing_person_id', id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
     }
   });
 
@@ -52,7 +73,7 @@ const DetailedReport = () => {
     console.log("Comment submitted with location:", commentLocation);
   };
 
-  if (isLoading) {
+  if (isLoadingPerson) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-xl">Loading...</div>
@@ -89,6 +110,16 @@ const DetailedReport = () => {
                   No Photo<br />Available
                 </div>
               )}
+
+              <div className="mt-4">
+                <Button
+                  onClick={() => setShowComments(!showComments)}
+                  className="w-full bg-[#ea384c] hover:bg-[#ea384c]/90 text-white flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  {showComments ? 'Hide Comments' : 'Show Comments'}
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -140,6 +171,22 @@ const DetailedReport = () => {
             </div>
           </div>
         </div>
+
+        {showComments && (
+          <Comments
+            comments={comments}
+            itemId={id || ''}
+            tableName="missing_person_comments"
+            session={null}
+            onCommentAdded={(itemId, comment) => {
+              console.log('Comment added:', comment);
+              toast({
+                title: "Success",
+                description: "Comment added successfully",
+              });
+            }}
+          />
+        )}
 
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border-2 border-gray-200">
           <h2 className="text-2xl font-bold mb-6 text-[#ea384c]">Can You HELP?</h2>
@@ -207,3 +254,4 @@ const DetailedReport = () => {
 };
 
 export default DetailedReport;
+
