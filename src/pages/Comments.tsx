@@ -30,7 +30,7 @@ const Comments = () => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!id // Only run the query if we have an ID
+    enabled: !!id
   });
 
   if (isLoading) {
@@ -83,6 +83,13 @@ const Comments = () => {
                             initialLat={Number(comment.latitude)}
                             initialLng={Number(comment.longitude)}
                             readOnly={true}
+                            markers={[
+                              {
+                                lat: Number(comment.latitude),
+                                lng: Number(comment.longitude),
+                                popup: comment.content
+                              }
+                            ]}
                           />
                         </div>
                         <button
