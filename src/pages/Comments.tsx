@@ -16,6 +16,8 @@ const Comments = () => {
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['missingPersonComments', id],
     queryFn: async () => {
+      if (!id) throw new Error('Missing person ID is required');
+      
       const { data, error } = await supabase
         .from('missing_person_comments')
         .select(`
@@ -27,7 +29,8 @@ const Comments = () => {
 
       if (error) throw error;
       return data || [];
-    }
+    },
+    enabled: !!id // Only run the query if we have an ID
   });
 
   if (isLoading) {
