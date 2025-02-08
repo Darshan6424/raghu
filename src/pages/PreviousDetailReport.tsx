@@ -73,32 +73,34 @@ const PreviousDetailReport = () => {
                 {index + 1}
               </div>
               
-              <div className="bg-white rounded-lg overflow-hidden shadow-md">
+              <div className="relative flex flex-col">
                 <Button
                   variant="link"
-                  className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline absolute -left-4 top-8"
+                  className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline self-start mb-2"
                   onClick={() => navigate(`/missing-persons/${person.id}`)}
                 >
                   See More
                 </Button>
 
-                <div className="aspect-square bg-gray-100">
-                  {person.image_url ? (
-                    <img
-                      src={person.image_url}
-                      alt={`${person.name}'s photo`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-center p-4">
-                      Photo<br />(submitted<br />before by<br />users)
-                    </div>
-                  )}
-                </div>
+                <div className="bg-white rounded-lg overflow-hidden shadow-md">
+                  <div className="aspect-square bg-gray-100">
+                    {person.image_url ? (
+                      <img
+                        src={person.image_url}
+                        alt={`${person.name}'s photo`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-center p-4">
+                        Photo<br />(submitted<br />before by<br />users)
+                      </div>
+                    )}
+                  </div>
 
-                <div className="bg-[#ea384c] text-white py-2 px-4 flex justify-between items-center">
-                  <span>{person.name}</span>
-                  <span>{person.age ? `${person.age}` : ''}</span>
+                  <div className="bg-[#ea384c] text-white py-2 px-4 flex justify-between items-center">
+                    <span>{person.name}</span>
+                    <span>{person.age ? `${person.age}` : ''}</span>
+                  </div>
                 </div>
               </div>
             </div>
