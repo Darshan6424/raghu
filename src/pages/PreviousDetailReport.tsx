@@ -54,9 +54,17 @@ const PreviousDetailReport = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-[1200px] mx-auto px-4">
-        <h1 className="text-4xl font-bold text-[#ea384c] text-center mb-12">
-          Previous Missing Reports
-        </h1>
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-4xl font-bold text-[#ea384c]">
+            Previous Missing Reports
+          </h1>
+          <Button 
+            onClick={() => navigate('/')}
+            className="bg-white text-[#ea384c] border-2 border-[#ea384c] hover:bg-[#ea384c] hover:text-white transition-colors"
+          >
+            Back to Home
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {missingPersons.map((person, index) => (
@@ -66,15 +74,13 @@ const PreviousDetailReport = () => {
               </div>
               
               <div className="bg-white rounded-lg overflow-hidden shadow-md">
-                <div className="absolute left-2 top-2">
-                  <Button
-                    variant="link"
-                    className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline p-0"
-                    onClick={() => navigate(`/missing-persons/${person.id}`)}
-                  >
-                    See More
-                  </Button>
-                </div>
+                <Button
+                  variant="link"
+                  className="text-[#ea384c] hover:text-[#ea384c]/90 font-semibold underline absolute -left-4 top-8"
+                  onClick={() => navigate(`/missing-persons/${person.id}`)}
+                >
+                  See More
+                </Button>
 
                 <div className="aspect-square bg-gray-100">
                   {person.image_url ? (
@@ -97,15 +103,6 @@ const PreviousDetailReport = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="mt-8 flex justify-center">
-          <Button 
-            onClick={() => navigate('/')}
-            className="bg-white text-[#ea384c] border-2 border-[#ea384c] hover:bg-[#ea384c] hover:text-white transition-colors"
-          >
-            Back to Home
-          </Button>
         </div>
       </div>
     </div>
