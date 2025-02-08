@@ -67,15 +67,15 @@ const DetailedReport = () => {
     setCommentImage(null);
   };
 
-  const handleSubmitComment = async () => {
-    if (!id) return;
+  const handleSubmitComment = async (content: string) => {
+    if (!id || !content.trim()) return;
     
     try {
       const { data, error } = await supabase
         .from('missing_person_comments')
         .insert([{
           missing_person_id: id,
-          content: "New comment",
+          content: content,
           latitude: commentLocation.lat,
           longitude: commentLocation.lng,
           image_url: commentImage

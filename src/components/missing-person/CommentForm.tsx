@@ -13,7 +13,7 @@ interface CommentFormProps {
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onImageRemove: () => void;
   onLocationSelected: (lat: number, lng: number) => void;
-  onSubmit: () => void;
+  onSubmit: (content: string) => void;
   initialLat?: number;
   initialLng?: number;
 }
@@ -29,12 +29,20 @@ const CommentForm = ({
   initialLng
 }: CommentFormProps) => {
   const [showFullMap, setShowFullMap] = useState(false);
+  const [content, setContent] = useState("");
+
+  const handleSubmit = () => {
+    onSubmit(content);
+    setContent("");
+  };
 
   return (
     <div className="space-y-6">
       <Textarea 
         placeholder="Comment Any clues" 
-        className="w-full min-h-[120px]" 
+        className="w-full min-h-[120px]"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
       />
 
       <div className="grid md:grid-cols-[300px,1fr] gap-6">
@@ -71,7 +79,7 @@ const CommentForm = ({
 
       <div className="flex justify-end mt-4">
         <Button
-          onClick={onSubmit}
+          onClick={handleSubmit}
           className="bg-[#ea384c] hover:bg-[#ea384c]/90 text-white px-8"
         >
           Submit Comment
@@ -94,3 +102,4 @@ const CommentForm = ({
 };
 
 export default CommentForm;
+

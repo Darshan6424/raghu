@@ -139,7 +139,9 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          latitude: number | null
           likes: number | null
+          longitude: number | null
           missing_person_id: string | null
           user_id: string | null
           user_likes: string[] | null
@@ -149,7 +151,9 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          latitude?: number | null
           likes?: number | null
+          longitude?: number | null
           missing_person_id?: string | null
           user_id?: string | null
           user_likes?: string[] | null
@@ -159,7 +163,9 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          latitude?: number | null
           likes?: number | null
+          longitude?: number | null
           missing_person_id?: string | null
           user_id?: string | null
           user_likes?: string[] | null
