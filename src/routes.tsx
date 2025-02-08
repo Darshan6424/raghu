@@ -7,6 +7,7 @@ import DamageReportsList from "./pages/DamageReportsList";
 import PreviousDetailReport from "./pages/PreviousDetailReport";
 import DetailedReport from "./pages/DetailedReport";
 import Comments from "./pages/Comments";
+import WhatIf from "./pages/WhatIf";
 
 const AppRoutes = () => {
   return (
@@ -17,6 +18,7 @@ const AppRoutes = () => {
       <Route path="/previous-detail-report" element={<PreviousDetailReport />} />
       <Route path="/detailed-report/:id" element={<DetailedReport />} />
       <Route path="/comments/:id" element={<Comments />} />
+      <Route path="/what-if" element={<WhatIf />} />
       <Route path="/first-aid/:topic" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
