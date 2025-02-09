@@ -1,6 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, User, Brain, HeartPulse } from "lucide-react";
+import VideoSection from "@/components/VideoSection";
 
 const AskExpert = () => {
   return (
@@ -28,6 +30,9 @@ const AskExpert = () => {
           </div>
         </div>
 
+        {/* Video Section */}
+        <VideoSection />
+
         {/* Expert Query Input */}
         <div className="relative">
           <Input
@@ -54,7 +59,7 @@ const AskExpert = () => {
           className="w-full py-3 border-2 border-gray-300 rounded-full text-gray-700"
         />
 
-        {/* Expert Selection Buttons - Keeping the existing functionality */}
+        {/* Expert Selection Buttons */}
         <div className="flex gap-2">
           {["Expert 1", "Expert 2", "Expert 3"].map((expert) => (
             <Button

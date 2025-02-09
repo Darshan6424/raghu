@@ -133,6 +133,41 @@ export type Database = {
         }
         Relationships: []
       }
+      expert_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          expert_id: string | null
+          id: string
+          title: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expert_id?: string | null
+          id?: string
+          title: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expert_id?: string | null
+          id?: string
+          title?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_videos_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missing_person_comments: {
         Row: {
           content: string
