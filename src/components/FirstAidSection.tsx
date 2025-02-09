@@ -1,9 +1,10 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 const FirstAidSection = () => {
-  const navigate = useNavigate();
+  const handleReadMore = () => {
+    window.open("https://www.redcross.org.uk/first-aid/learn-first-aid/videos", "_blank");
+  };
 
   return (
     <section id="first-aid" className="min-h-screen py-20 px-4 bg-gray-50">
@@ -19,7 +20,7 @@ const FirstAidSection = () => {
             <div key={index} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-xl font-semibold mb-4">{info.title}</h3>
               <p className="text-gray-600 mb-4">{info.content}</p>
-              <Button variant="link" onClick={() => navigate(`/first-aid/${info.title.toLowerCase().replace(/\s+/g, '-')}`)}>
+              <Button variant="link" onClick={handleReadMore}>
                 Read More
               </Button>
             </div>
